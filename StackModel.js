@@ -1,5 +1,12 @@
 .pragma library
 
+// Qt Quick DropEvent has action flags, not a keyboard-modifiers property.
+// Qt may propose Copy even when Move is available. Keep our Move default,
+// but never turn a copy-only offer (Ctrl at our source) into a destructive move.
+function dropCopies(drop) {
+  return !!(drop.supportedActions & Qt.CopyAction) && !(drop.supportedActions & Qt.MoveAction)
+}
+
 function normalizeFolders(raw) {
   if (!Array.isArray(raw)) return []
   var seen = {}, out = []

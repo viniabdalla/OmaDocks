@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
 import "DockModel.js" as DockModel
+import "StackModel.js" as StackModel
 
 // Everything needed to render the dock on one screen: the always-present
 // hover trigger strip (autohide mode only), the pill itself, and the three
@@ -822,7 +823,7 @@ Item {
               onExited:{ springOpen.stop(); surface.dropHovered=false }
               onDropped:function(drop){
                 springOpen.stop()
-                var copy=!!(drop.modifiers & Qt.ControlModifier)
+                var copy=StackModel.dropCopies(drop)
                 controller.moveUrls(drop.urls,folderIcon.folder.path,copy)
                 drop.accept(copy ? Qt.CopyAction : Qt.MoveAction)
                 surface.dropHovered=false

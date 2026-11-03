@@ -9,8 +9,15 @@ function load(file, extra={}) {
     vm.runInContext(readFileSync(path.join(__dirname, '..', file), 'utf8').replace(/^\.(pragma|import).*$/gm,''), context);
   return context;
 }
-const m = load('StackModel.js');
+const m = load('StackModel.js', {Qt:{CopyAction:1,MoveAction:2}});
 const plain = x => JSON.parse(JSON.stringify(x));
+test('incoming transfers default to Move and preserve copy-only offers', () => {
+  assert.equal(m.dropCopies({supportedActions:3,proposedAction:2}),false);
+  assert.equal(m.dropCopies({supportedActions:3,proposedAction:1}),false);
+  assert.equal(m.dropCopies({supportedActions:1,proposedAction:1}),true);
+  assert.equal(m.dropCopies({supportedActions:1,proposedAction:0}),true);
+  assert.equal(m.dropCopies({supportedActions:2,proposedAction:2}),false);
+});
 test('folders reject relative paths and deduplicate normalized paths', () => {
   assert.deepEqual(plain(m.normalizeFolders([{path:'/tmp/files/'}, {path:'/tmp/files'}, {path:'relative'}, null])),
     [{path:'/tmp/files',name:'files',view:'fan',showHidden:false,sort:'name'}]);

@@ -1,4 +1,5 @@
 import QtQuick
+import "StackModel.js" as StackModel
 
 DropArea {
   id:root
@@ -11,7 +12,7 @@ DropArea {
   onExited:springTimer.stop()
   onDropped:function(drop){
     springTimer.stop()
-    var copy=!!(drop.modifiers & Qt.ControlModifier)
+    var copy=StackModel.dropCopies(drop)
     root.filesDropped(drop.urls,root.destination,copy)
     drop.accept(copy ? Qt.CopyAction : Qt.MoveAction)
   }

@@ -1,0 +1,421 @@
+{
+  "hyprland": "0.56.2",
+  "qt": "6.11.2",
+  "nativeCases": [
+    {
+      "view": "grid",
+      "cancelled": false,
+      "terminalLine": "'$QA_DIR/files/Terminal path file.txt'",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "grid",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 397.5,
+            "y": 406.5,
+            "width": 580,
+            "height": 240
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "grid",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 397.5,
+            "y": 406.5,
+            "width": 580,
+            "height": 240
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    },
+    {
+      "view": "grid",
+      "cancelled": true,
+      "terminalLine": "\u001bcancelled-grid",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "grid",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 397.5,
+            "y": 406.5,
+            "width": 580,
+            "height": 240
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "grid",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 397.5,
+            "y": 406.5,
+            "width": 580,
+            "height": 240
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    },
+    {
+      "view": "list",
+      "cancelled": false,
+      "terminalLine": "'$QA_DIR/files/Terminal path file.txt'",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "list",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 542.5,
+            "y": 494.5,
+            "width": 290,
+            "height": 152
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "list",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 542.5,
+            "y": 494.5,
+            "width": 290,
+            "height": 152
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    },
+    {
+      "view": "list",
+      "cancelled": true,
+      "terminalLine": "\u001bcancelled-list",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "list",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 542.5,
+            "y": 494.5,
+            "width": 290,
+            "height": 152
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "list",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 542.5,
+            "y": 494.5,
+            "width": 290,
+            "height": 152
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    },
+    {
+      "view": "fan",
+      "cancelled": false,
+      "terminalLine": "'$QA_DIR/files/Terminal path file.txt'",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "fan",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 472.5,
+            "y": 434.5,
+            "width": 430,
+            "height": 212
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "fan",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 472.5,
+            "y": 434.5,
+            "width": 430,
+            "height": 212
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    },
+    {
+      "view": "fan",
+      "cancelled": true,
+      "terminalLine": "\u001bcancelled-fan",
+      "during": {
+        "stack": {
+          "opened": true,
+          "view": "fan",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 472.5,
+            "y": 434.5,
+            "width": 430,
+            "height": 212
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": true
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      },
+      "after": {
+        "stack": {
+          "opened": false,
+          "view": "fan",
+          "path": "$QA_DIR/files",
+          "loading": false,
+          "error": "",
+          "count": 2,
+          "rect": {
+            "x": 472.5,
+            "y": 434.5,
+            "width": 430,
+            "height": 212
+          },
+          "source": {
+            "x": 666,
+            "y": 658.5,
+            "width": 43,
+            "height": 43
+          },
+          "cascades": [],
+          "outgoingDrag": false
+        },
+        "revealed": false,
+        "popup": "",
+        "message": "",
+        "dropQueue": 0,
+        "transferQueue": 0
+      }
+    }
+  ],
+  "additional": {
+    "rightClickViewPersisted": "list",
+    "hoverCascadeDepth": 3,
+    "cascadeEscapeAndKeyboard": true,
+    "ctrlTerminalDropRetainsSource": true
+  },
+  "pinning": {
+    "passed": true
+  },
+  "organization": {
+    "reordered": true,
+    "unpinned": true,
+    "sourceRetained": true
+  },
+  "incomingTransfers": [
+    {
+      "copyRequested": true,
+      "sourceRetained": true,
+      "destinationExists": true,
+      "offeredActions": 1
+    },
+    {
+      "copyRequested": false,
+      "sourceRetained": false,
+      "destinationExists": true,
+      "offeredActions": 3
+    }
+  ],
+  "sourceSha256": {
+    "FileDrag.qml": "e2677fcd5747010993930db752bee41bfbb9899a646240787c6a014b28e3804f",
+    "FileDrop.qml": "829f9a00fe869ae70c59a274a6d9f45e256070c2b2ea5662ae497bfa99ef8c44",
+    "FolderStack.qml": "4fc0ed06f89da33696a3c7bb73516cb1368d4b4a2b9c9fcfbe86dfbe16ed6cfc",
+    "DockSurface.qml": "23af7291fd433f6a0e9a577b0e453b7f74f94ce7a56055518a48cbb13736bde7",
+    "StackModel.js": "2770d3583920106084110b89b45a066215cb79fffa579de4432cec31be1f78d2",
+    "helpers/transfer.py": "fb7009cc1f5a72ae13c7c8742ead12463e9b48c01193cebf444e9c2ae0e5efca"
+  },
+  "fixtureContentSha256": "7171fbbab8f47353f0c6fbb8610a315161057c07a29b8d8d44c29070409953d1"
+}

@@ -102,3 +102,29 @@ v0.56.2 source explicitly calls abortDndIfPresent on Escape in KeybindManager;
 its DataDevice abort sends cancellation to the source. Real isolated Hyprland
 Escape verification remains pending; do not claim it was tested on the user's
 desktop. Temporary QA services/artifacts were removed by the reboot.
+
+Final native follow-up supersedes the pending Escape limitation above. Ran the
+actual complete Dock under a private Hyprland 0.56.2 with a 1280x720 headless
+monitor and Foot, using only that compositor's virtual input socket. NVIDIA
+headless allocation and parent protocol compatibility needed test-only
+rendering adapters; production input code/QML remained unchanged.
+
+Found and fixed a second native lifecycle bug: DragHandler.active remained
+true after a native release consumed outside the source. Reopening the same
+view could not start another offer. Recreating the gesture component on native
+completion/cancellation resets both handlers. Unit regression failed first;
+all three actual views then passed repeated drops and Escape-before-release,
+with stack/dock dismissed, original retained and subsequent terminal typing.
+
+Native receiving tests also exposed use of a nonexistent DropEvent.modifiers
+property. Copy-only Ctrl offers were being moved. FileDrop and pinned-folder
+receivers now share StackModel.dropCopies, preserving Copy-only offers while
+keeping Move as default when supported. A Qt default Copy proposal by itself
+must not change that default. Real cross-client tests verify retained source
+on Ctrl-copy and removed source on default Move; complete file contents match.
+
+Additional native checks passed: actual pinned-icon right-click and persisted
+List selection; three hover-only cascades and Escape during leaf drag; Ctrl
+terminal drop; folder pinning, reorder and drag-away unpin retaining its source.
+Sanitized results and requirement audit are in docs/qa/. Final automated suite
+is 10 JS + 15 Python + 13 Qt Quick results including lifecycle hooks.

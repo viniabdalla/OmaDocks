@@ -61,6 +61,26 @@ TestCase {
     compare(drag.Drag.supportedActions,Qt.CopyAction)
     mouseRelease(drag,30,30,Qt.LeftButton,Qt.ControlModifier)
   }
+  function test_native_completion_releases_pointer_for_the_next_drag() {
+    var drag=createTemporaryObject(fileDragComponent,this,{width:100,height:100,entry:fixtures[1]})
+    // Exercise real pointer activation, then deliver the completion callback
+    // independently of the offscreen platform's native drag implementation.
+    drag.Drag.dragType=Drag.Internal
+    var handler=findChild(drag,"fileDragHandler")
+    mousePress(drag,20,30)
+    mouseMove(drag,70,30)
+    compare(handler.active,true)
+    drag.Drag.dragFinished(Qt.IgnoreAction)
+    tryVerify(function(){ var h=findChild(drag,"fileDragHandler"); return h && !h.active })
+    mouseRelease(drag,70,30)
+    handler=findChild(drag,"fileDragHandler")
+    mousePress(drag,20,30)
+    mouseMove(drag,70,30)
+    compare(handler.active,true)
+    drag.Drag.dragFinished(Qt.CopyAction)
+    tryVerify(function(){ var h=findChild(drag,"fileDragHandler"); return h && !h.active })
+    mouseRelease(drag,70,30)
+  }
   function test_grid_click_and_keyboard_open_files() {
     var grid=createTemporaryObject(gridComponent,this,{width:600,height:400,entries:fixtures,expanded:true})
     verify(grid)

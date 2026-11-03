@@ -47,7 +47,8 @@ a transfer that the destination has already started after a drop.
 
 Both Copy and Move remain available to native destinations for terminal
 compatibility. Some file managers choose Copy even when Move is proposed.
-Holding Ctrl when starting the drag offers Copy only. Dropping on folders
+Holding Ctrl when starting the drag offers Copy only. Incoming Copy-only offers
+are preserved; if Move is available, OmaDocks uses its Move default. Dropping on folders
 inside OmaDocks uses Move by default and Ctrl to copy.
 
 There is **no plus button on the dock**. Manage pinned folders from the

@@ -27,35 +27,35 @@ Reloading settings must preserve both inherited app state and folder choices.
 Files: inherited QML/JS/icons; `StackModel.js`; `tests/stack-model.test.cjs`.
 Interfaces: normalized folder `{path,name,view,showHidden,sort}`; `normalizeFolders(raw)`, `fanLayout(count,height)`, `stackRect(edge,anchor,size,screen)`.
 
-- [ ] Copy the active plugin preserving license and attribution; rename ID and state paths.
-- [ ] Write tests for folder validation, view defaults, deduplication, URI handling, fan overflow, screen geometry and app/folder state round trips; run them failing.
-- [ ] Implement the pure model and persistence integration, run tests, commit.
+- [x] Copy the active plugin preserving license and attribution; rename ID and state paths.
+- [x] Write tests for folder validation, view defaults, deduplication, URI handling, fan overflow, screen geometry and app/folder state round trips; run them failing.
+- [x] Implement the pure model and persistence integration, run tests, commit.
 
 ### Task 2: Directory service
 
 Files: `helpers/folders.py`; `tests/test_folders.py`; `FolderModel.qml`.
 Interfaces: helper `list PATH --sort name|modified --hidden` emits `{path,entries,total,error}` JSON; entry `{name,path,url,isDir,icon,modified}`. QML `FolderModel` exposes `path`, `entries`, `loading`, `error`, `refresh()`.
 
-- [ ] Write real temporary-directory tests covering sorting, hidden files, symlinks, literal paths, missing paths and errors; run failing.
-- [ ] Implement helper and asynchronous refresh with stale-response protection; run tests, commit.
+- [x] Write real temporary-directory tests covering sorting, hidden files, symlinks, literal paths, missing paths and errors; run failing.
+- [x] Implement helper and asynchronous refresh with stale-response protection; run tests, commit.
 
 ### Task 3: Stack views and integration
 
 Files: `FolderStack.qml`, `StackFan.qml`, `StackGrid.qml`, `StackList.qml`, `StackSettings.qml`; modify `Dock.qml` and `DockSurface.qml`.
 Interfaces: views emit `openEntry(entry)`, `showAll()`, `dismiss()`; stack overlay owns current path/view, anchoring and dismissal. Settings emit add/update/remove requests.
 
-- [ ] Add QML tests for Fan geometry, overflow activation, Grid entry activation and scrolling, List hover navigation and settings persistence; observe failure before creating views.
-- [ ] Build the folder settings panel and pinned folder strip with per-folder view controls.
-- [ ] Implement elastic Fan with perspective/shadows and overflow Grid shortcut.
-- [ ] Implement expanding blurred Grid with hover selection, scrolling and file activation.
-- [ ] Implement fast sliding List with delayed hover cascades and screen bounds.
-- [ ] Integrate keyboard/outside-click dismissal and auto-hide reveal hold; run tests and live loading checks; commit.
+- [x] Add QML tests for Fan geometry, overflow activation, Grid entry activation and scrolling, List hover navigation and settings persistence; observe failure before creating views.
+- [x] Build the folder settings panel and pinned folder strip with per-folder view controls.
+- [x] Implement elastic Fan with perspective/shadows and overflow Grid shortcut.
+- [x] Implement expanding blurred Grid with hover selection, scrolling and file activation.
+- [x] Implement fast sliding List with delayed hover cascades and screen bounds.
+- [x] Integrate keyboard/outside-click dismissal and auto-hide reveal hold; run tests and live loading checks; commit.
 
 ### Task 4: Delivery and visual validation
 
 Files: README, install/dev scripts, QA evidence and recorded decisions.
 
-- [ ] Run full Python/JS/QML suites and inspect real running Fan/Grid/List views, nested navigation, file opening and persisted state.
-- [ ] Perform independent code review and fix material issues with regression coverage.
-- [ ] Install reversibly, verify plugin loaded and desktop healthy, retain original state and plugin for rollback.
-- [ ] Commit, push to the user-provided repository and report actual validation and limitations.
+- [x] Run full Python/JS/QML suites and inspect real running Fan/Grid/List views, nested navigation, file opening and persisted state.
+- [x] Perform independent code review and fix material issues with regression coverage.
+- [x] Install reversibly, verify plugin loaded and desktop healthy, retain original state and plugin for rollback.
+- [x] Commit, push to the user-provided repository and report actual validation and limitations.
