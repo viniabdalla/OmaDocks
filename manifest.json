@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.viniabdalla.omadocks",
+  "name": "OmaDocks",
+  "version": "0.1.0",
+  "author": "viniabdalla; based on Dockseid by Silkvain",
+  "license": "MIT",
+  "description": "Your Omarchy dock, with animated Fan, Grid and cascading List folder stacks, app grouping, theme integration and glass effects.",
+  "kinds": ["panel", "bar-widget"],
+  "keepLoaded": true,
+  "entryPoints": {
+    "panel": "Dock.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "OmaDocks settings",
+    "description": "Opens OmaDocks settings",
+    "category": "Compositor",
+    "allowMultiple": false
+  }
+}
