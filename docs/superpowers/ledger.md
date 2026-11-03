@@ -74,3 +74,31 @@ terminal compatibility. Native outbound default-Move across receivers remains
 an unresolved limitation; do not claim the entire original goal complete.
 The toolbar removal and right-click folder menu are installed and pushed on
 main in d5aaa2d. No host pointer or keyboard automation was used in this follow-up.
+
+Follow-up after the user's real drag failure: reproduced with the complete
+FolderStack layer under an isolated Labwc compositor. Dropping over the former
+panel area hit its own FileDrop instead of the terminal. Removed the remaining
+panel input region during native drags, hide all stack contents, signal dock
+retraction at drag start, and unmap before restoring the normal input mask on
+completion/cancellation. Repeating that full overlay drag inserted the quoted
+path into Foot, with the source retained.
+
+The user explicitly accepted native destinations choosing Copy to preserve
+terminal compatibility and confirmed that inserting the path is the desired
+terminal behavior. No terminal switch is needed.
+
+The user then reported Escape trapping their keyboard and rebooted. Keyboard
+focus is now None during outgoing drags, closing animation and after close;
+Exclusive is limited to an opened, expanded, visible stack. The hidden-overlay
+regression exercises actual FolderStack regions, content opacity, dock release,
+cancel cleanup and closing focus; failures were observed before these fixes.
+No visible host test window or host pointer/keyboard injection is used.
+Fresh suite: 9 JS, 15 Python (including the actual hidden Quickshell overlay),
+12 QML including lifecycle. Installed IPC responds and Hyprland config is clean.
+
+Escape validation limitation: Labwc suppresses keyboard input during native
+DnD, so its Escape result cannot stand in for Hyprland. The installed Hyprland
+v0.56.2 source explicitly calls abortDndIfPresent on Escape in KeybindManager;
+its DataDevice abort sends cancellation to the source. Real isolated Hyprland
+Escape verification remains pending; do not claim it was tested on the user's
+desktop. Temporary QA services/artifacts were removed by the reboot.

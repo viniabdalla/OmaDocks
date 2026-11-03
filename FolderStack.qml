@@ -27,26 +27,15 @@ PanelWindow {
   anchors { top:true; bottom:true; left:true; right:true }
   WlrLayershell.namespace: "omadocks-stacks"
   WlrLayershell.layer: WlrLayer.Overlay
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-  // During native drags keep only the panels in the input region, exposing
-  // file managers and terminals underneath the rest of this screen.
+  // Never retain the keyboard for an invisible/closing overlay. Hyprland
+  // handles Escape during native drags and cancels the Wayland offer itself.
+  WlrLayershell.keyboardFocus: root.opened && root.expanded && !root.outgoingDrag
+    ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+  // The native drag owns the pointer grab. Keep its source surface mapped,
+  // but expose every destination underneath, including the old panel area.
   mask:Region {
     width:root.outgoingDrag ? 0 : root.width
     height:root.outgoingDrag ? 0 : root.height
-    Region {
-      x:root.dragBounds.x; y:root.dragBounds.y
-      width:root.outgoingDrag ? root.dragBounds.width : 0
-      height:root.outgoingDrag ? root.dragBounds.height : 0
-    }
-  }
-  readonly property var dragBounds: {
-    var x=card.x,y=card.y,right=card.x+card.width,bottom=card.y+card.height
-    if(currentView==="fan") { x=Math.min(x,sourceRect.x-330); right=Math.max(right,sourceRect.x+180) }
-    for(var i=0;i<cascades.length;i++) {
-      var child=cascadeRepeater.itemAt(i)
-      if(child) { x=Math.min(x,child.x); y=Math.min(y,child.y); right=Math.max(right,child.x+child.width); bottom=Math.max(bottom,child.y+child.height) }
-    }
-    return {x:Math.max(0,x),y:Math.max(0,y),width:right-Math.max(0,x),height:bottom-Math.max(0,y)}
   }
 
   readonly property real availableFanHeight: edge==="top" ? height-sourceRect.y-sourceRect.height-65 :
@@ -65,15 +54,26 @@ PanelWindow {
     currentView=value.view
     sourceRect=anchor
     history=[]; cascades=[]
-    managing=false; expanded=false; opened=true
+    outgoingDrag=false; managing=false; expanded=false; opened=true
     Qt.callLater(function(){ root.expanded=true; root.focusView() })
   }
-  function close() { expanded=false; closeTimer.restart() }
+  function close() {
+    expanded=false
+    root.outsideDismissed()
+    closeTimer.restart()
+  }
+  function beginDrag() {
+    outgoingDrag=true
+    root.outsideDismissed()
+  }
   function finishDrag(action) {
-    outgoingDrag=false
     // Some file managers perform the transfer but finish the Wayland offer
     // with IgnoreAction. Closing the stack never changes the source file.
-    root.outsideDismissed(); root.close()
+    // Unmap before restoring the input region; never flash the stack back
+    // over the destination after dropping or pressing Escape.
+    closeTimer.stop(); expanded=false; opened=false; cascades=[]
+    outgoingDrag=false
+    root.dismissed()
   }
   function snapshot() {
     var layers=[]
@@ -136,12 +136,14 @@ PanelWindow {
     anchors.fill:parent; acceptedButtons:Qt.LeftButton | Qt.RightButton
     onClicked:function(mouse){
       if(mouse.button===Qt.RightButton) root.contextRequested(mouse.x,mouse.y)
-      else { root.outsideDismissed(); root.close() }
+      else root.close()
     }
   }
   // This focus scope catches Escape even when a grid/list handles other keys.
   FocusScope {
     id:keyFocus
+    objectName:"stackContents"
+    opacity:root.outgoingDrag ? 0 : 1
     anchors.fill:parent; focus:true
     Keys.onEscapePressed: root.close()
     Keys.onPressed: function(event) {
@@ -189,7 +191,7 @@ PanelWindow {
         edge:root.edge; entries:directory.entries; expanded:root.expanded && visible
         onOpenEntry: function(entry) { root.activate(entry) }
         onShowAll:root.chooseView("grid",false)
-        onDragStarted:root.outgoingDrag=true
+        onDragStarted:root.beginDrag()
         onDragFinished:function(action){ root.finishDrag(action) }
         onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
       }
@@ -199,7 +201,7 @@ PanelWindow {
         visible:root.currentView==="grid"
         entries:directory.entries; expanded:root.expanded && visible
         onOpenEntry: function(entry) { root.activate(entry) }
-        onDragStarted:root.outgoingDrag=true
+        onDragStarted:root.beginDrag()
         onDragFinished:function(action){ root.finishDrag(action) }
         onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
         Keys.onEscapePressed:root.close()
@@ -228,7 +230,7 @@ PanelWindow {
         onHoverFolder: function(entry,rowY) { root.openCascade(0,entry,rowY,{x:card.x,y:card.y,width:card.width,height:card.height}) }
         onHoverFile:root.trimCascades(0)
         onGoBack:root.back()
-        onDragStarted:root.outgoingDrag=true
+        onDragStarted:root.beginDrag()
         onDragFinished:function(action){ root.finishDrag(action) }
         onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
         Keys.onEscapePressed:root.close()
@@ -280,7 +282,7 @@ PanelWindow {
           onHoverFile:root.trimCascades(submenu.index+1)
           onGoBack: { root.trimCascades(submenu.index); if(submenu.index===0) list.forceActiveFocus(); else { var previous=cascadeRepeater.itemAt(submenu.index-1); if(previous) previous.focusMenu() } }
           Keys.onEscapePressed:root.close()
-          onDragStarted:root.outgoingDrag=true
+          onDragStarted:root.beginDrag()
           onDragFinished:function(action){ root.finishDrag(action) }
           onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
         }

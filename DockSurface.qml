@@ -843,7 +843,7 @@ Item {
     controller:surface.controller
     edge:surface.position
     onDismissed: if(surface.openPopupKind==="stack") { surface.openPopupKind=""; surface.openPopupItem=null }
-    onOutsideDismissed:{ folderMenu.visible=false; surface.openPopupKind=""; surface.pillHovered=false; surface.triggerHovered=false; surface.revealed=surface.effectiveAlwaysVisible }
+    onOutsideDismissed:{ folderMenu.visible=false; surface.openPopupKind=""; surface.pillHovered=false; surface.triggerHovered=false; surface.dropHovered=false; surface.revealed=surface.effectiveAlwaysVisible }
     onContextRequested:function(x,y){ surface.showFolderMenu(folderStack.folder,folderStack,x,y) }
   }
 

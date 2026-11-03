@@ -38,6 +38,18 @@ source in response to a native drag-finished signal: the destination file
 manager performs its own transfer. Existing destination names are never
 silently overwritten. Transfer failures produce a desktop notification.
 
+When dragging out, the stack disappears and its entire mouse-input region is
+released, so you can drop on the window that was behind it. An auto-hide dock
+retracts at the start of the gesture. The overlay releases keyboard focus while
+dragging and as soon as closing starts. On Hyprland, **Escape cancels a native
+drag before dropping**; it also closes an ordinary open stack. It does not undo
+a transfer that the destination has already started after a drop.
+
+Both Copy and Move remain available to native destinations for terminal
+compatibility. Some file managers choose Copy even when Move is proposed.
+Holding Ctrl when starting the drag offers Copy only. Dropping on folders
+inside OmaDocks uses Move by default and Ctrl to copy.
+
 There is **no plus button on the dock**. Manage pinned folders from the
 **Folders** tab in the dock-settings popover in the bar. It uses Omarchy's
 own themed UI components. Set each folder's display name, default view,
@@ -66,6 +78,8 @@ Before changing the shell configuration it saves a timestamped backup under
 `~/.local/state/omadocks/install-backups/`. The original Dockseid checkout and
 state file are retained. To roll back, restore that backup's `shell.json` to
 `~/.config/omarchy/shell.json`, then run `omarchy-shell shell rescanPlugins`.
+If the running shell does not confirm the refresh, the installer reports that
+separately and gives a restart command to run when convenient.
 
 OmaDocks stores its settings independently in
 `~/.local/state/omadocks/state.json`. First start imports your existing

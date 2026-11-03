@@ -46,10 +46,21 @@ def install():
     tmp=config.with_name('shell.json.omadocks-tmp')
     tmp.write_text(json.dumps(updated,indent=2)+'\n')
     tmp.replace(config)
-    subprocess.run(['omarchy-shell','shell','rescanPlugins'],check=True)
     print('Installed:',project)
     print('Configuration backup:',backup/'shell.json')
-    print('The existing bar dock-settings button now opens OmaDocks.')
+    ipc_env=os.environ.copy()
+    ipc_env['OMARCHY_SHELL_IPC_TIMEOUT']='3s'
+    try:
+        rescan=subprocess.run(['omarchy-shell','shell','rescanPlugins'],env=ipc_env,
+                              timeout=5,check=False)
+        refreshed=rescan.returncode==0
+    except (OSError,subprocess.TimeoutExpired):
+        refreshed=False
+    if refreshed:
+        print('The existing bar dock-settings button now opens OmaDocks.')
+    else:
+        print('Files and configuration are installed; the running shell did not confirm the refresh.')
+        print('When convenient, run: omarchy restart shell')
 
 
 if __name__=='__main__':
