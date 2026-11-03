@@ -65,3 +65,12 @@ is responsive with no Hyprland config errors. Dev instance stopped.
 Pending: finish isolated native protocol checks (Ctrl and terminal), verify
 right-click full integration without host automation, finalize docs/installer
 handling, push repository to main and full completion audit.
+
+Isolated Weston follow-up: Ctrl-copy into Nautilus was verified with the
+original retained. Both-action native offers can be selected as Copy by the
+destination even though OmaDocks proposes Move. A Move-only offer moved in
+Nautilus but was rejected by foot, so that experiment was reverted to retain
+terminal compatibility. Native outbound default-Move across receivers remains
+an unresolved limitation; do not claim the entire original goal complete.
+The toolbar removal and right-click folder menu are installed and pushed on
+main in d5aaa2d. No host pointer or keyboard automation was used in this follow-up.

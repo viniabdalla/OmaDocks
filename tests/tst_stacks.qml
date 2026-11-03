@@ -58,6 +58,7 @@ TestCase {
     var drag=createTemporaryObject(fileDragComponent,this,{width:80,height:80,entry:fixtures[1]})
     mousePress(drag,30,30,Qt.LeftButton,Qt.ControlModifier)
     compare(drag.Drag.proposedAction,Qt.CopyAction)
+    compare(drag.Drag.supportedActions,Qt.CopyAction)
     mouseRelease(drag,30,30,Qt.LeftButton,Qt.ControlModifier)
   }
   function test_grid_click_and_keyboard_open_files() {
