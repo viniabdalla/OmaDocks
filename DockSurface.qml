@@ -196,11 +196,12 @@ Item {
     hoverPopup.visible = false
     contextMenu.visible = false
     settingsPopup.visible = false
+    folderMenu.visible=false
     if (folderStack.opened) folderStack.close()
   }
 
   function showHover(iconItem, item) {
-    if (surface.openPopupKind === "menu" || surface.openPopupKind === "settings" || surface.openPopupKind === "stack" || surface.dragActive) return
+    if (surface.openPopupKind === "menu" || surface.openPopupKind === "foldermenu" || surface.openPopupKind === "settings" || surface.openPopupKind === "stack" || surface.dragActive) return
     hoverHideTimer.stop()
     surface.openPopupKind = "hover"
     surface.openPopupItem = item
@@ -327,6 +328,21 @@ Item {
   function openFolderSettings() {
     surface.showSettings(true); settingsPopup.activeTab=2
   }
+  function showFolderMenu(folder,host,x,y) {
+    hoverHideTimer.stop(); hoverPopup.visible=false
+    contextMenu.visible=false; settingsPopup.visible=false
+    folderMenu.folder=folder
+    folderMenu.selectedView=folderStack.opened && folderStack.folder.path===folder.path ? folderStack.currentView : folder.view
+    folderMenu.hostWindow=host
+    folderMenu.position=Qt.point(x,y)
+    if(!folderStack.opened) surface.openPopupKind="foldermenu"
+    folderMenu.visible=true
+  }
+  function showFolderMenuAtIcon(icon,folder) {
+    surface.closePopups()
+    var p=dockWindow.contentItem.mapFromItem(icon,icon.width/2,0)
+    surface.showFolderMenu(folder,popupAnchor,surface.dockOriginX+p.x,surface.dockOriginY+p.y)
+  }
   function stackStatus() { return folderStack.snapshot() }
 
   Component.onCompleted: controller.registerSurface(surface)
@@ -442,7 +458,7 @@ Item {
       anchors.fill:parent
       onEntered:function(drag){ if(drag.hasUrls) { surface.dropHovered=true; surface.revealed=true } else drag.accepted=false }
       onExited:surface.dropHovered=false
-      onDropped:function(drop){ controller.importUrls(drop.urls); drop.acceptProposedAction(); surface.dropHovered=false }
+      onDropped:function(drop){ controller.importUrls(drop.urls); drop.accept(Qt.CopyAction); surface.dropHovered=false }
     }
   }
 
@@ -455,7 +471,7 @@ Item {
       anchors.fill:parent
       onEntered:function(drag){ if(drag.hasUrls) { surface.dropHovered=true; surface.revealed=true } else drag.accepted=false }
       onExited:surface.dropHovered=false
-      onDropped:function(drop){ controller.importUrls(drop.urls); drop.acceptProposedAction(); surface.dropHovered=false }
+      onDropped:function(drop){ controller.importUrls(drop.urls); drop.accept(Qt.CopyAction); surface.dropHovered=false }
     }
 
     WlrLayershell.namespace: "omadocks"
@@ -786,7 +802,7 @@ Item {
               sizeScale:surface.settings.size
               menuOpen:folderStack.opened && folderStack.folder.path===folderIcon.folder.path && !folderStack.managing
               onPrimaryClicked:surface.openFolder(folderIcon,folderIcon.folder)
-              onRightClicked:surface.openFolderSettings()
+              onRightClicked:surface.showFolderMenuAtIcon(folderIcon,folderIcon.folder)
               onMiddleClicked:controller.openFile(folderIcon.folder.path)
               onHoverEntered:surface.showHover(folderIcon,{name:folderIcon.folder.name,toplevels:[]})
               onHoverExited:surface.scheduleHideHover()
@@ -827,7 +843,8 @@ Item {
     controller:surface.controller
     edge:surface.position
     onDismissed: if(surface.openPopupKind==="stack") { surface.openPopupKind=""; surface.openPopupItem=null }
-    onOutsideDismissed:{ surface.openPopupKind=""; surface.pillHovered=false; surface.triggerHovered=false; surface.revealed=surface.effectiveAlwaysVisible }
+    onOutsideDismissed:{ folderMenu.visible=false; surface.openPopupKind=""; surface.pillHovered=false; surface.triggerHovered=false; surface.revealed=surface.effectiveAlwaysVisible }
+    onContextRequested:function(x,y){ surface.showFolderMenu(folderStack.folder,folderStack,x,y) }
   }
 
   // ------------------------------------------------------ popup anchor host
@@ -927,5 +944,20 @@ Item {
     onShowInFullscreenPicked: function(v) { controller.setShowInFullscreen(v); settingsPopup.showInFullscreen = v }
     onShowWhenEmptyPicked: function(v) { controller.setShowWhenEmpty(v); settingsPopup.showWhenEmpty = v }
     onDismissed: if (surface.openPopupKind === "settings") surface.closePopups()
+  }
+
+  FolderMenu {
+    id:folderMenu
+    onViewPicked:function(view){
+      if(folderStack.opened && folderStack.folder.path===folder.path) folderStack.updateOptions({view:view})
+      else controller.updateFolder(folder.path,{view:view})
+    }
+    onOptionPicked:function(patch){
+      if(folderStack.opened && folderStack.folder.path===folder.path) folderStack.updateOptions(patch)
+      else controller.updateFolder(folder.path,patch)
+    }
+    onOpenRequested:{ controller.openFile(folder.path); surface.closePopups() }
+    onUnpinRequested:{ controller.removeFolder(folder.path); surface.closePopups() }
+    onDismissed:if(surface.openPopupKind==="foldermenu") surface.openPopupKind=""
   }
 }

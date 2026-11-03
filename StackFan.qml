@@ -35,8 +35,8 @@ Item {
       readonly property var entry: more ? ({name:"Show all",iconSource:""}) : root.entries[index]
       readonly property var pose: StackModel.fanPose(index, root.layout.visibleCount)
       readonly property bool iconOnLeft: root.edge === "left" || root.originX < 330
-      readonly property real dx: root.edge === "left" ? -pose.y : (root.edge === "right" ? pose.y : pose.x * (root.originX > root.width-300 ? -1 : 1))
-      readonly property real dy: root.edge === "top" ? -pose.y : (root.edge === "bottom" ? pose.y : pose.x * (root.originY > root.height-300 ? -1 : 1))
+      readonly property real dx: root.edge === "left" ? 54+pose.x : (root.edge === "right" ? -54-pose.x : pose.x * (root.originX > root.width-300 ? -1 : 1))
+      readonly property real dy: root.edge === "top" ? -pose.y : pose.y
       objectName: more ? "fanShowAll" : "fanEntry" + index
       width: Math.min(310, root.width - 120); height: 60
       x: StackModel.clamp(root.originX - (iconOnLeft ? 28 : width-28) + dx*root.progress,8,root.width-width-8)

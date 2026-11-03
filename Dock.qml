@@ -100,9 +100,27 @@ Item {
       s.openStackPath(path,view)
       return "ok"
     }
+    function openStackOn(screenName: string,path: string,view: string): string {
+      var s=root.surfaceForScreen(screenName)
+      if(!s) return "unknown"
+      s.openStackPath(path,view)
+      return "ok"
+    }
+    function stackStatusOn(screenName:string):string { var s=root.surfaceForScreen(screenName); return JSON.stringify(s ? s.stackStatus() : {}) }
     function closeStack(): string { var s=root.surfaceForScreen(""); if(s) s.closePopups(); return "ok" }
     function status(): string { return JSON.stringify({loaded:root.stateLoaded, folders:root.folders, apps:root.dockItems.length}) }
     function stackStatus(): string { var s=root.surfaceForScreen(""); return JSON.stringify(s ? s.stackStatus() : {}) }
+  }
+
+  // Preserve the user's existing dock-settings indicator in the bar. The
+  // installer disables the original dock before loading this compatibility route.
+  IpcHandler {
+    target:"io.github.silkvain.dockseid"
+    function openSettings():string { return root.openSettings() ? "ok" : "unknown" }
+    function toggleSettings():string { return root.toggleSettings() ? "ok" : "unknown" }
+    function openSettingsOn(screenName:string):string { return root.openSettings(screenName) ? "ok" : "unknown" }
+    function toggleSettingsOn(screenName:string):string { return root.toggleSettings(screenName) ? "ok" : "unknown" }
+    function settings():string { return root.openSettings() ? "ok" : "unknown" }
   }
 
   Process {
@@ -438,6 +456,7 @@ Item {
   property var dropQueue: []
   property string transferMessage: ""
   property var transferQueue: []
+  property string transferOperation: "moved"
   function moveUrls(urls,destination,copy) {
     var paths=StackModel.localPaths(urls)
     if(!paths.length) return
@@ -450,6 +469,7 @@ Item {
       if(transferReader.running || !root.transferQueue.length) return
       var queue=root.transferQueue.slice(), task=queue.shift()
       root.transferQueue=queue
+      root.transferOperation=task.copy ? "copied" : "moved"
       transferReader.command=["python3",decodeURIComponent(Qt.resolvedUrl("helpers/transfer.py").toString().replace(/^file:\/\//,"")),task.destination].concat(task.paths)
       if(task.copy) transferReader.command=transferReader.command.concat(["--copy"])
       transferReader.running=true
@@ -461,7 +481,8 @@ Item {
       onStreamFinished: {
         try {
           var result=JSON.parse(text)
-          root.transferMessage=result.errors.length ? result.errors.join("\n") : result.moved.length+" item(s) moved"
+          root.transferMessage=result.errors.length ? result.errors.join("\n") : result.moved.length+" item(s) "+root.transferOperation
+          if(result.errors.length) Quickshell.execDetached(["notify-send","--app-name=OmaDocks","--icon=dialog-error","OmaDocks",root.transferMessage])
         } catch(e) { root.transferMessage="Could not move the dropped items" }
       }
     }

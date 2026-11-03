@@ -776,7 +776,7 @@ PopupWindow {
               width: Style.space(20)
               height: Style.space(20)
               fillMode: Image.PreserveAspectFit
-              asynchronous: true
+              asynchronous: source.toString().indexOf("image://") !== 0
               sourceSize.width: width * Screen.devicePixelRatio
               sourceSize.height: height * Screen.devicePixelRatio
               source: row.modelData.iconSource || ""

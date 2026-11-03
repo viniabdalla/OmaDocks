@@ -8,6 +8,7 @@ Item {
   property bool expanded: false
   property color foreground: "#f4f4f5"
   property int selectedIndex: -1
+  onEntriesChanged: selectedIndex=entries.length ? Math.min(Math.max(0,selectedIndex),entries.length-1) : -1
   property bool loading: false
   property string error: ""
   signal openEntry(var entry)
@@ -31,7 +32,7 @@ Item {
     else if (event.key === Qt.Key_Home) selectedIndex = 0
     else if (event.key === Qt.Key_End) selectedIndex = entries.length-1
     else if (event.key === Qt.Key_Left) root.goBack()
-    else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Right) && selectedIndex>=0) {
+    else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Right) && selectedIndex>=0 && selectedIndex<entries.length) {
       var entry=entries[selectedIndex]
       if (entry.isDir) root.hoverFolder(entry,44+selectedIndex*34-list.contentY)
       else if (event.key !== Qt.Key_Right) root.openEntry(entry)

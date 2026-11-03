@@ -46,3 +46,18 @@ class TransferTests(unittest.TestCase):
             self.assertEqual(result['errors'],[])
             self.assertEqual((src/'nested'/'note').read_text(),'keep me')
             self.assertEqual((dest/'source'/'nested'/'note').read_text(),'keep me')
+
+    def test_cross_device_folder_move_and_copy_failure_preserve_data(self):
+        import os
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory(dir='/tmp') as tmp, tempfile.TemporaryDirectory(dir='/dev/shm') as other:
+            p=Path(tmp); dest=Path(other)
+            if os.stat(p).st_dev==os.stat(dest).st_dev: self.skipTest('Requires two filesystems')
+            src=p/'source'; src.mkdir(); (src/'nested').mkdir(); (src/'nested'/'note').write_text('all bytes')
+            result=self.transfer.move_files([str(src)],str(dest))
+            self.assertEqual(result['errors'],[])
+            self.assertFalse(src.exists()); self.assertEqual((dest/'source'/'nested'/'note').read_text(),'all bytes')
+            failed=p/'failed'; failed.mkdir(); (failed/'note').write_text('retain original')
+            with patch.object(self.transfer,'copy_entry',side_effect=OSError('simulated disk full')):
+                result=self.transfer.move_files([str(failed)],str(dest))
+            self.assertTrue(result['errors']); self.assertEqual((failed/'note').read_text(),'retain original')

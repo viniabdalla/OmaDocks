@@ -31,3 +31,37 @@ Subsequent reloads have not crashed. Original desktop shell was unaffected.
 User refinements: no plus button; no generic Linux settings dialog; compact
 Omarchy settings in the bar; clicking outside retracts the dock. Drag folders
 to pin; files move to/from folders, Ctrl copies, terminal gets a path only.
+
+2026-11-03 installed milestone: dedicated plugin is now loaded in the normal
+Omarchy shell. `omarchy-shell io.github.viniabdalla.omadocks status` returns
+loaded=true with user's folders and 6 apps. Original dock disabled; original
+checkout/state retained. Existing bar indicator uses compatibility IPC route.
+Current passing suites: 9 JS, 14 Python, 12 QML (including lifecycle).
+
+User latest refinement: remove the top view toolbar; Fan/Grid/List and Open
+in file manager now live in an Omarchy-styled right-click menu on the pinned
+folder icon and the open stack. Generic settings dialog and plus removed.
+
+Independent reviewer findings addressed: side-edge Fan pointer targets, List
+selection after shrinking, no-clobber pin action, cross-filesystem folder
+move fallback retaining original until copy success, visible error toasts,
+correct copied/moved wording. Regression tests observed RED then GREEN.
+
+Live QA evidence: native outbound Move into Nautilus succeeded (source gone,
+destination content intact). Three hover-only cascade levels and outside
+dismissal passed. Ctrl-copy offer has Qt pointer-modifier regression coverage;
+several live Ctrl attempts were invalidated by target being in closed
+scratchpad / changing window geometry. Do NOT claim end-to-end Ctrl or terminal
+verification yet. User needs their computer: stop all host mouse/keyboard tests.
+Any further native checks must be isolated offscreen. All uinput devices were
+closed and no wtype process remains.
+
+Development runtime moved to /run/user/1000/omadocks-dev-1000, linking only runtime
+assets. Earlier .runtime project-root symlink created recursive watching and
+reloads during QA changes. It was removed, and QA artifacts moved to
+/tmp/omadocks-qa-artifacts-1793733483. The normal shell was restarted once and
+is responsive with no Hyprland config errors. Dev instance stopped.
+
+Pending: finish isolated native protocol checks (Ctrl and terminal), verify
+right-click full integration without host automation, finalize docs/installer
+handling, push repository to main and full completion audit.

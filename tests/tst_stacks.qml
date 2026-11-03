@@ -14,6 +14,7 @@ TestCase {
   Component { id: fanComponent; StackFan {} }
   Component { id: gridComponent; StackGrid {} }
   Component { id: listComponent; StackList {} }
+  Component { id: fileDragComponent; FileDrag {} }
   SignalSpy { id: activation; signalName: "openEntry" }
   SignalSpy { id: overflow; signalName: "showAll" }
   SignalSpy { id: navigation; signalName: "hoverFolder" }
@@ -52,6 +53,12 @@ TestCase {
     verify(drag.Drag.supportedActions & Qt.MoveAction)
     verify(drag.Drag.supportedActions & Qt.CopyAction)
     compare(drag.Drag.proposedAction,Qt.MoveAction)
+  }
+  function test_ctrl_held_at_drag_start_proposes_copy() {
+    var drag=createTemporaryObject(fileDragComponent,this,{width:80,height:80,entry:fixtures[1]})
+    mousePress(drag,30,30,Qt.LeftButton,Qt.ControlModifier)
+    compare(drag.Drag.proposedAction,Qt.CopyAction)
+    mouseRelease(drag,30,30,Qt.LeftButton,Qt.ControlModifier)
   }
   function test_grid_click_and_keyboard_open_files() {
     var grid=createTemporaryObject(gridComponent,this,{width:600,height:400,entries:fixtures,expanded:true})
@@ -100,5 +107,36 @@ TestCase {
     mouseClick(row,30,row.height/2)
     compare(activation.count,1)
     compare(activation.signalArguments[0][0].path,"/tmp/Report.pdf")
+  }
+  function test_list_selection_survives_files_disappearing() {
+    var list=createTemporaryObject(listComponent,this,{width:280,height:240,entries:fixtures,expanded:true})
+    activation.target=list
+    list.forceActiveFocus(); keyClick(Qt.Key_End)
+    compare(list.selectedIndex,1)
+    list.entries=[fixtures[1]]
+    keyClick(Qt.Key_Return)
+    compare(activation.count,1)
+    compare(activation.signalArguments[0][0].path,"/tmp/Report.pdf")
+    list.entries=[]; keyClick(Qt.Key_Return)
+    compare(activation.count,1)
+  }
+  function test_fan_icons_at_all_edges_activate_their_own_files() {
+    var entries=[]
+    for(var i=0;i<8;i++) entries.push({name:"File "+i,path:"/tmp/"+i,isDir:false})
+    var edges=[{edge:"left",x:40,y:650},{edge:"right",x:1326,y:650},{edge:"bottom",x:683,y:728},{edge:"top",x:683,y:40}]
+    width=1366; height=768
+    for(var e=0;e<edges.length;e++) {
+      var edge=edges[e]
+      var fan=createTemporaryObject(fanComponent,this,{width:1366,height:768,availableHeight:700,originX:edge.x,originY:edge.y,edge:edge.edge,entries:entries,expanded:true})
+      activation.target=fan; activation.clear(); wait(500)
+      for(var i=0;i<8;i++) {
+        var card=findChild(fan,"fanEntry"+i)
+        verify(card)
+        mouseClick(card,card.iconOnLeft ? 28 : card.width-28,30)
+        compare(activation.signalArguments[i][0].path,"/tmp/"+i,edge.edge+" item "+i)
+      }
+      fan.destroy(); activation.target=null
+    }
+    width=900; height=700
   }
 }

@@ -12,8 +12,8 @@ Item {
   signal finished(int action)
   Drag.dragType: Drag.Automatic
   Drag.active: handler.active
-  Drag.supportedActions: Qt.CopyAction | Qt.MoveAction
-  Drag.proposedAction: Qt.MoveAction
+  Drag.supportedActions: handler.centroid.modifiers & Qt.ControlModifier ? Qt.CopyAction : (Qt.CopyAction | Qt.MoveAction)
+  Drag.proposedAction: handler.centroid.modifiers & Qt.ControlModifier ? Qt.CopyAction : Qt.MoveAction
   Drag.mimeData: ({"text/uri-list":(entry.url || StackModel.fileUrl(entry.path))+"\r\n", "text/plain":entry.path})
   Drag.imageSource: entry.iconSource || ""
   Drag.imageSourceSize: Qt.size(64,64)
@@ -21,5 +21,5 @@ Item {
   Drag.onDragStarted:root.started()
   Drag.onDragFinished:function(action) { root.finished(action) }
   DragHandler { id:handler; target:null; acceptedButtons:Qt.LeftButton }
-  TapHandler { acceptedButtons:Qt.LeftButton; onTapped:root.clicked() }
+  TapHandler { acceptedButtons:Qt.LeftButton; gesturePolicy:TapHandler.ReleaseWithinBounds; onTapped:root.clicked() }
 }

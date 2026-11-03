@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 
 
@@ -39,13 +40,32 @@ def move_files(sources, destination, copy=False):
             if copy:
                 copy_entry(source,target,Gio)
             else:
-                Gio.File.new_for_path(str(source)).move(
-                    Gio.File.new_for_path(str(target)), Gio.FileCopyFlags.NOFOLLOW_SYMLINKS,
-                    None, None)
+                try:
+                    Gio.File.new_for_path(str(source)).move(
+                        Gio.File.new_for_path(str(target)), Gio.FileCopyFlags.NOFOLLOW_SYMLINKS,
+                        None, None)
+                except Exception as exc:
+                    if not (source.is_dir() and not source.is_symlink() and
+                            getattr(exc,'code',None)==Gio.IOErrorEnum.WOULD_RECURSE):
+                        raise
+                    # GIO does not recursively move a directory between
+                    # filesystems. Keep the entire original until copying
+                    # succeeds; copy_entry creates the destination exclusively.
+                    before=tree_stamp(source)
+                    copy_entry(source,target,Gio)
+                    if tree_stamp(source)!=before:
+                        raise OSError('Source changed while copying; original retained')
+                    shutil.rmtree(source)
             result['moved'].append(str(target))
         except Exception as exc:
             result['errors'].append(str(exc))
     return result
+
+
+def tree_stamp(directory):
+    paths=[directory]+list(directory.rglob('*'))
+    return sorted((str(p.relative_to(directory)),p.lstat().st_ino,p.lstat().st_size,p.lstat().st_mtime_ns)
+                  for p in paths)
 
 
 if __name__=='__main__':

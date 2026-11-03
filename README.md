@@ -1,102 +1,113 @@
 # OmaDocks
 
-![OmaDocks V2](preview.png)
+An Omarchy dock with macOS-style **Fan, Grid and List folder stacks**.
+Built on the customized Dockseid dock, retaining its application grouping,
+pinned apps, drag ordering, agent/web-app icons, magnification, glass effects,
+theme settings, four-edge placement, multiple monitors and auto-hide.
 
-A macOS-style pill dock for [Omarchy](https://omarchy.org). It shows your running
-and pinned apps, groups every window of an app under one icon, and follows your
-Omarchy theme, with glass and blur effects, icon magnification and per-colour
-overrides if you want the dock to look different from the rest of the desktop.
+## Folder stacks
 
-## Install
+- **Fan:** files spring from the folder in a curved arc, with elastic motion,
+  perspective scaling, shadows and hover labels. **Show all** opens Grid when
+  the folder contains more items than fit.
+- **Grid:** a dark frosted panel expands from the folder icon. File icons fade
+  and pop in together, hover selection follows the pointer, and contents scroll.
+- **List:** a compact menu slides open. Hover subfolders to open cascading
+  menus, continuing through multiple levels without clicks.
+
+Click an item to open it in its usual application. Grid folders open inside
+that panel; List folders expand on hover. Escape or a click outside dismisses
+all folder panels and retracts an auto-hide dock. Right-click the folder icon or open stack for Fan/Grid/List, Open in file
+manager, sorting, hidden files and unpinning. Folder views have no top toolbar.
+
+## Drag and drop
+
+Drag a folder from your file manager onto an empty part of the dock to pin it.
+Drag an existing folder icon to reorder it, or away from the dock to unpin it.
+Dropping files **on a pinned folder** transfers them into that folder; hovering
+first spring-opens it, so you can target a nested folder.
+
+| Drop destination | Default | With Ctrl held |
+| --- | --- | --- |
+| A folder icon or subfolder inside a stack | Move | Copy |
+| A file-manager folder, dragging out of a stack | Offer Move | Offer Copy |
+| A terminal | Insert the file path; retain the file | Insert the file path; retain the file |
+
+Native destinations negotiate the final action. OmaDocks never deletes a
+source in response to a native drag-finished signal: the destination file
+manager performs its own transfer. Existing destination names are never
+silently overwritten. Transfer failures produce a desktop notification.
+
+There is **no plus button on the dock**. Manage pinned folders from the
+**Folders** tab in the dock-settings popover in the bar. It uses Omarchy's
+own themed UI components. Set each folder's display name, default view,
+name/newest sorting and hidden-file visibility there.
+
+## Install from this checkout
+
+Requires Omarchy's Quickshell shell, Hyprland, Python 3, `python-gobject`
+(GIO), `xdg-open` and `notify-send`. These are available on the development
+machine. Run inside your graphical Omarchy session:
 
 ```sh
-omarchy plugin add https://github.com/Silkvain/OmaDocks.git --enable
+git clone https://github.com/viniabdalla/OmaDocks.git ~/Projects/OmaDocks
+cd ~/Projects/OmaDocks
+python3 scripts/install.py
 ```
 
-For local development, link this folder to
-`~/.config/omarchy/plugins/io.github.viniabdalla.omadocks` and run:
+The installer links this checkout into
+`~/.config/omarchy/plugins/io.github.viniabdalla.omadocks`, disables the
+original Dockseid plugin, and preserves your other plugins and bar layout.
+Your existing customized dock-settings bar indicator continues to work via a
+compatibility IPC route. On other bar layouts it adds the OmaDocks settings
+widget.
+
+Before changing the shell configuration it saves a timestamped backup under
+`~/.local/state/omadocks/install-backups/`. The original Dockseid checkout and
+state file are retained. To roll back, restore that backup's `shell.json` to
+`~/.config/omarchy/shell.json`, then run `omarchy-shell shell rescanPlugins`.
+
+OmaDocks stores its settings independently in
+`~/.local/state/omadocks/state.json`. First start imports your existing
+Dockseid app pins, ordering and appearance and adds a Downloads stack. Later
+starts preserve your OmaDocks choices, including an intentionally empty folder
+list. Set `OMADOCKS_STATE_DIR` to use another directory during development.
+
+## Development and verification
 
 ```sh
-omarchy plugin enable io.github.viniabdalla.omadocks
+python3 scripts/dev.py
+bash scripts/test.sh
 ```
 
-## Features
+The development launcher uses a separate Quickshell configuration under
+`$XDG_RUNTIME_DIR/omadocks-dev-<uid>`. Close it before enabling the installed
+plugin to avoid two docks. It links only runtime assets, so changing test
+fixtures does not reload a native drag in progress.
 
-**Apps**
-- Every running application gets an icon, with a small dot while it's open.
-- Pin apps to keep them in the dock: right-click an icon, or use the **Add App**
-  tab in the settings to search for one you haven't opened yet.
-- All windows of an app stack on a single icon. Click to cycle through them, or
-  hover to see the list and jump straight to one.
-- Drag icons to reorder them. The order is remembered.
-- Web apps (Discord, YouTube, WhatsApp and other browser app windows) group under
-  their own app icon instead of showing up as a separate one.
-- Omarchy's agent windows show the mark of the agent you picked in Omarchy
-  (Claude Code or Codex), and follow it if you change it. Other agents get a
-  terminal icon.
-- Hover labels are small speech bubbles. Browser windows show the site name, or
-  "New Window" when nothing is loaded.
+Tests cover real directory enumeration, literal filenames/URIs, symlinks,
+large folders, state migration, app/folder persistence, panel geometry,
+Fan overflow and click targets on every edge, Grid scrolling/activation,
+List hover and shrinking contents, animation startup, drag MIME/action offers,
+copy/move/no-clobber transfers, and cross-filesystem folder moves/failures.
+The runner uses Qt 6's `qmltestrunner`; override `QML_TEST_RUNNER` if your Qt 6
+installation has a different path.
 
-**Look**
-- Follows your active Omarchy theme, including the icon theme colour when you
-  switch themes.
-- **Glass** effect: a frosted, translucent dock over a blurred copy of your wallpaper.
-- Adjustable **opacity** and **background blur**. Blur shows through when opacity
-  is below 100%.
-- **Icon magnification**: icons grow under the cursor, macOS-style (optional).
-- Shape: Square, Rounded or Pill. Adjustable size and outline width.
-- **Background, outline and the Omarchy logo** can each be set to your own colour
-  with a colour wheel, independently. Anything you don't set follows the theme.
-- Sharp vector icons for many popular apps ship with the plugin. Other apps use
-  your system icon theme.
+Useful installed-session diagnostics:
 
-**Behaviour**
-- **Auto-hide**: the dock slides in when you move the pointer to its screen edge.
-  Or **Always visible**, which reserves its own strip of the screen so windows
-  tile around it.
-- Put it on any edge (bottom, top, left, right) of one monitor or all of them.
-- **Over fullscreen apps**: keep the dock hidden, or reveal it on hover over a
-  fullscreen window.
-- **When workspace is empty**: with auto-hide, the dock can stay visible while
-  the workspace you're on has no windows.
+```sh
+omarchy-shell io.github.viniabdalla.omadocks status
+omarchy-shell io.github.viniabdalla.omadocks folders
+omarchy-shell io.github.viniabdalla.omadocks stackStatusOn DP-3
+```
 
-## Usage
+## Attribution and rendering notes
 
-- **Left click**: launch a pinned app that isn't running, minimise or restore a
-  single window, or cycle to the next window of a group.
-- **Middle click**: close all of an app's windows.
-- **Right click**: keep in or remove from the dock, open, new window (for apps that
-  offer it), or quit.
-- **Hover**: the app name, or the list of windows for a group.
-- **Drag**: reorder icons.
-- **Omarchy logo button** (leftmost): opens the settings.
+OmaDocks derives from [Dockseid by Silkvain](https://github.com/Silkvain/Dockseid)
+and Vini's customized checkout at `64f0701`. Original code and icon attribution
+are retained in [LICENSE](LICENSE) and [icons/README.md](icons/README.md).
+The new folder-stack work is also MIT licensed.
 
-## Settings
-
-Click the Omarchy logo on the dock. Everything is set there, so there are no files
-to edit. The **Settings** tab has three groups:
-
-- **Placement**: screen, position, visibility, when the workspace is empty,
-  edge offset, and behaviour over fullscreen apps.
-- **Appearance**: shape, size, icon magnification, glass, opacity, background
-  blur and the outline.
-- **Theme**: pick Background, Outline or Logo, then choose **System** or **Custom**
-  for it. A colour you picked is remembered if you switch back to System.
-
-Choosing **Glass** sets its own opacity, blur and outline, so those controls are
-greyed out while it's on.
-
-Your settings and pinned apps are stored in
-`~/.local/state/omadocks/state.json`.
-
-## Notes
-
-- Built for Omarchy on Hyprland. Workspace-based behaviour uses Hyprland's
-  workspace information.
-- The blur effect blurs your wallpaper, not the windows behind the dock.
-- Bundled icons: see [icons/README.md](icons/README.md) for the sources and
-  licences. App logos remain the property of their owners.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+The portable frosted background blurs a correctly positioned wallpaper crop,
+as in the inherited dock. It does not sample other application windows behind
+it. Native drag offers use [Qt Quick's Drag API](https://doc.qt.io/qt-6/qml-qtquick-drag.html).
