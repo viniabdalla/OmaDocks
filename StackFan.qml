@@ -16,7 +16,7 @@ Item {
   readonly property var layout: StackModel.fanLayout(entries.length, availableHeight)
   readonly property bool reversed: edge === "top"
   signal openEntry(var entry)
-  signal showAll()
+  signal openFolder()
   signal dragStarted()
   signal dragFinished(int action)
   signal filesDropped(var urls,string destination,bool copy)
@@ -31,13 +31,13 @@ Item {
     Item {
       id: card
       required property int index
-      readonly property bool more: root.layout.hasOverflow && index === root.layout.visibleCount - 1
-      readonly property var entry: more ? ({name:"Show all",iconSource:""}) : root.entries[index]
+      readonly property bool openAction: index === root.layout.fileCount
+      readonly property var entry: openAction ? ({name:"Open in File Manager",iconSource:""}) : root.entries[index]
       readonly property var pose: StackModel.fanPose(index, root.layout.visibleCount)
       readonly property bool iconOnLeft: root.edge === "left" || root.originX < 330
       readonly property real dx: root.edge === "left" ? 54+pose.x : (root.edge === "right" ? -54-pose.x : pose.x * (root.originX > root.width-300 ? -1 : 1))
       readonly property real dy: root.edge === "top" ? -pose.y : pose.y
-      objectName: more ? "fanShowAll" : "fanEntry" + index
+      objectName: openAction ? "fanOpenFolder" : "fanEntry" + index
       width: Math.min(310, root.width - 120); height: 60
       x: StackModel.clamp(root.originX - (iconOnLeft ? 28 : width-28) + dx*root.progress,8,root.width-width-8)
       y: StackModel.clamp(root.originY - height/2 + dy*root.progress,8,root.height-height-8)
@@ -59,7 +59,7 @@ Item {
         Text {
           id: label
           anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11
-          text: card.more ? "Show all  ·  " + root.entries.length : card.entry.name
+          text: card.openAction ? "Open in File Manager" : card.entry.name
           textFormat: Text.PlainText; elide: Text.ElideMiddle
           verticalAlignment: Text.AlignVCenter
           color: root.foreground; font.pixelSize: 13
@@ -70,13 +70,13 @@ Item {
         x:card.iconOnLeft ? 0 : card.width-width
         anchors.verticalCenter: parent.verticalCenter
         width: 56; height: 56
-        layer.enabled: true
+        layer.enabled: !card.openAction
         layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "#80000000"; shadowBlur: 0.7; shadowVerticalOffset: 5; shadowHorizontalOffset: 1 }
         Rectangle {
           anchors.fill: parent; anchors.margins: 3
-          visible: card.more || !card.entry.iconSource
-          radius: 13; color: card.more ? "#45628b" : (card.entry.isDir ? "#527fa8" : "#d4d9e1")
-          Text { anchors.centerIn: parent; text: card.more ? "▦" : (card.entry.isDir ? "▰" : "▤"); color: "white"; font.pixelSize: 32 }
+          visible: !card.openAction && !card.entry.iconSource
+          radius: 13; color: card.entry.isDir ? "#527fa8" : "#d4d9e1"
+          Text { anchors.centerIn: parent; text: card.entry.isDir ? "▰" : "▤"; color: "white"; font.pixelSize: 32 }
         }
         Image {
           anchors.fill: parent
@@ -85,22 +85,28 @@ Item {
           fillMode: Image.PreserveAspectFit; asynchronous: source.toString().indexOf("image://") !== 0
         }
       }
+      OpenFolderIcon {
+        x:card.iconOnLeft ? 0 : card.width-width
+        anchors.verticalCenter:parent.verticalCenter
+        width:56; height:56; visible:card.openAction
+        color:root.foreground
+      }
       MouseArea {
         id: hit
         anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-        acceptedButtons:card.more ? Qt.LeftButton : Qt.NoButton
-        onClicked: card.more ? root.showAll() : root.openEntry(card.entry)
+        acceptedButtons:card.openAction ? Qt.LeftButton : Qt.NoButton
+        onClicked: card.openAction ? root.openFolder() : root.openEntry(card.entry)
       }
       FileDrag {
         anchors.fill:parent; objectName:"fileDrag"
-        enabled:!card.more; entry:card.entry
+        enabled:!card.openAction; entry:card.entry
         onClicked:root.openEntry(card.entry)
         onStarted:root.dragStarted()
         onFinished:function(action){ root.dragFinished(action) }
       }
       FileDrop {
         anchors.fill:parent
-        destination:!card.more && card.entry.isDir ? card.entry.path : ""
+        destination:!card.openAction && card.entry.isDir ? card.entry.path : ""
         onFilesDropped:function(urls,destination,copy){ root.filesDropped(urls,destination,copy) }
         onSpringLoad:root.openEntry(card.entry)
       }

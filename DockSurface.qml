@@ -957,7 +957,6 @@ Item {
       if(folderStack.opened && folderStack.folder.path===folder.path) folderStack.updateOptions(patch)
       else controller.updateFolder(folder.path,patch)
     }
-    onOpenRequested:{ controller.openFile(folder.path); surface.closePopups() }
     onUnpinRequested:{ controller.removeFolder(folder.path); surface.closePopups() }
     onDismissed:if(surface.openPopupKind==="foldermenu") surface.openPopupKind=""
   }

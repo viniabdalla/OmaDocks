@@ -1,5 +1,32 @@
 # OmaDocks build ledger
 
+## Estado atual — 2026-11-05
+
+O resumo operacional está no `AGENTS.md` da raiz. Trabalhamos no checkout
+`~/Projects/OmaDocks`, branch `main`; as mudanças desta sessão estão locais,
+sem commit/push. O repo `~/Projects/dockfix` foi clonado de
+`viniabdalla/dockfix-linux` para consulta; ele contém estudos, não a doca Linux.
+
+O DockFix 5.3.0 foi examinado sem execução. Rastreamos o arraste das pilhas
+até SwiftUI `onDrag(_:)` e um NSItemProvider criado da URL. O OmaDocks já
+tinha arraste nativo; agora FileDrag captura a prévia do item, com limite de
+320 × 128, hotspot no ponto pressionado e descarte de callbacks antigos.
+Mantidas as regras de Copy/Move e a compatibilidade com terminais.
+
+Após pesquisar imagens do macOS e obter aprovação do usuário, adicionamos
+**Open in File Manager** com seta circular: sempre na ponta do Fan,
+substituindo Show all, e como última célula rolável/selecionável do Grid.
+O clique abre currentPath e recolhe a pilha, inclusive numa subpasta.
+Removida a ação do menu de botão direito. List mantém sua ação existente.
+
+Última suíte: 10 JavaScript + 15 Python + 16 resultados Qt Quick, todos
+passando; diff sem problemas de whitespace. Aparência conferida offscreen.
+Nenhum novo teste de transferência nativa entre apps após a prévia; não
+iniciamos nem reiniciamos a doca. O usuário vai usar e ainda não relatou o
+resultado. Preserve a instrução de não abrir o app e não automatize seu input.
+
+## Histórico anterior — estados e pendências abaixo são datados
+
 The user requested direct execution: brainstorming questions were opted out.
 Work is in the requested dedicated checkout `~/Projects/OmaDocks`, branch
 `feat/folder-stacks`; no second checkout is needed for an initially empty repo.

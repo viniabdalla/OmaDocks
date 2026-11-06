@@ -5,7 +5,7 @@ import "OMADOCKS_TEST_MODULE" as Oma
 
 // Never map this window: exercise the real overlay without taking desktop input.
 ShellRoot {
-  QtObject { id: controller; property string wallpaperUrl: ""; property string transferMessage: ""; property int releases:0 }
+  QtObject { id: controller; property string wallpaperUrl: ""; property string transferMessage: ""; property int releases:0; property string openedPath:""; function openFile(path) { openedPath=path } }
   Oma.FolderStack {
     id: stack
     controller: controller
@@ -42,6 +42,13 @@ ShellRoot {
       stack.close()
       check(stack.WlrLayershell.keyboardFocus===WlrKeyboardFocus.None,"closing animation retains the keyboard")
       check(controller.releases===2,"closing the stack does not retract the dock")
+      stack.managing=true
+      stack.currentPath="/tmp/nested # é"
+      stack.expanded=true
+      stack.openCurrentFolder()
+      check(controller.openedPath===stack.currentPath,"open-folder action ignores the current nested folder")
+      check(!stack.expanded,"open-folder action does not close the stack")
+      check(controller.releases===3,"open-folder action does not retract the dock")
       console.log("QA_OVERLAY_RESULT",JSON.stringify(failures))
       Qt.quit()
     }

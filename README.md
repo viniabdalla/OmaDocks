@@ -8,17 +8,21 @@ theme settings, four-edge placement, multiple monitors and auto-hide.
 ## Folder stacks
 
 - **Fan:** files spring from the folder in a curved arc, with elastic motion,
-  perspective scaling, shadows and hover labels. **Show all** opens Grid when
-  the folder contains more items than fit.
+  perspective scaling, shadows and hover labels. **Open in File Manager** sits at the tip of the fan,
+  including when only part of a large folder fits.
 - **Grid:** a dark frosted panel expands from the folder icon. File icons fade
   and pop in together, hover selection follows the pointer, and contents scroll.
+  The last cell is **Open in File Manager**, with the macOS-style circled arrow;
+  it scrolls with the files and is reachable with End, then Enter.
 - **List:** a compact menu slides open. Hover subfolders to open cascading
   menus, continuing through multiple levels without clicks.
 
 Click an item to open it in its usual application. Grid folders open inside
 that panel; List folders expand on hover. Escape or a click outside dismisses
-all folder panels and retracts an auto-hide dock. Right-click the folder icon or open stack for Fan/Grid/List, Open in file
-manager, sorting, hidden files and unpinning. Folder views have no top toolbar.
+all folder panels and retracts an auto-hide dock. **Open in File Manager** opens
+the currently displayed folder and closes the stack. Right-click the folder
+icon or open stack for Fan/Grid/List, sorting, hidden files and unpinning.
+Folder views have no top toolbar.
 
 ## Drag and drop
 
@@ -44,6 +48,13 @@ retracts at the start of the gesture. The overlay releases keyboard focus while
 dragging and as soon as closing starts. On Hyprland, **Escape cancels a native
 drag before dropping**; it also closes an ordinary open stack. It does not undo
 a transfer that the destination has already started after a drop.
+
+The cursor carries a snapshot of the file's displayed item, including its name
+and rendered fallback artwork, in Fan, Grid and List. This follows DockFix's
+SwiftUI drag-preview approach using Qt's native drag API. The snapshot is taken
+before hiding the stack, capped at 320 × 128 pixels and released on completion.
+Releasing the pointer before capture completes cancels the pending preview.
+If capture cannot start, the file's theme icon remains the fallback.
 
 Both Copy and Move remain available to native destinations for terminal
 compatibility. Some file managers choose Copy even when Move is proposed.

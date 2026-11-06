@@ -106,6 +106,10 @@ PanelWindow {
       cascades=[]
     } else { controller.openFile(entry.path); close() }
   }
+  function openCurrentFolder() {
+    root.controller.openFile(root.currentPath)
+    root.close()
+  }
   function back() {
     if (!history.length) return
     var next=history.slice(); currentPath=next.pop(); history=next
@@ -190,7 +194,7 @@ PanelWindow {
         visible:root.currentView==="fan"
         edge:root.edge; entries:directory.entries; expanded:root.expanded && visible
         onOpenEntry: function(entry) { root.activate(entry) }
-        onShowAll:root.chooseView("grid",false)
+        onOpenFolder:root.openCurrentFolder()
         onDragStarted:root.beginDrag()
         onDragFinished:function(action){ root.finishDrag(action) }
         onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
@@ -201,6 +205,7 @@ PanelWindow {
         visible:root.currentView==="grid"
         entries:directory.entries; expanded:root.expanded && visible
         onOpenEntry: function(entry) { root.activate(entry) }
+        onOpenFolder:root.openCurrentFolder()
         onDragStarted:root.beginDrag()
         onDragFinished:function(action){ root.finishDrag(action) }
         onFilesDropped:function(urls,destination,copy){ root.controller.moveUrls(urls,destination,copy) }
@@ -226,7 +231,7 @@ PanelWindow {
         expanded:root.expanded && visible
         loading:directory.loading; error:directory.error
         onOpenEntry: function(entry) { root.activate(entry) }
-        onOpenFolder: { root.controller.openFile(root.currentPath); root.close() }
+        onOpenFolder:root.openCurrentFolder()
         onHoverFolder: function(entry,rowY) { root.openCascade(0,entry,rowY,{x:card.x,y:card.y,width:card.width,height:card.height}) }
         onHoverFile:root.trimCascades(0)
         onGoBack:root.back()

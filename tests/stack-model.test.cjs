@@ -35,14 +35,19 @@ test('dropped URIs decode local paths and reject remote hosts or malformed data'
     'https://example.com/a','file://server/share/a','file:///tmp/%00a','file:///tmp/%ZZ'])),
     ['/tmp/a b','/tmp/#hello']);
 });
-test('fan uses available height and reserves its last item for overflow', () => {
+test('fan reserves an open-folder action even without overflow', () => {
   const f = m.fanLayout(80, 480);
   assert.ok(f.visibleCount >= 3 && f.visibleCount <= 8);
   assert.equal(f.hasOverflow,true);
   assert.equal(f.fileCount, f.visibleCount-1);
   assert.equal(m.fanLayout(2,480).fileCount,2);
   assert.equal(m.fanLayout(2,480).hasOverflow,false);
-  assert.equal(m.fanLayout(0,480).visibleCount,0);
+  assert.equal(m.fanLayout(0,480).visibleCount,1);
+  assert.equal(m.fanLayout(2,480).visibleCount,3);
+  assert.equal(m.fanLayout(8,700).fileCount,7);
+  assert.equal(m.fanLayout(8,700).hasOverflow,true);
+  assert.equal(m.fanLayout(30,100).visibleCount,1);
+  assert.equal(m.fanLayout(30,100).fileCount,0);
 });
 test('fan follows a curved arc with increasing perspective size', () => {
   const a=m.fanPose(0,6), b=m.fanPose(2,6), c=m.fanPose(5,6);

@@ -12,7 +12,6 @@ PopupWindow {
   property string selectedView:folder.view
   signal viewPicked(string view)
   signal optionPicked(var patch)
-  signal openRequested()
   signal unpinRequested()
   signal dismissed()
   visible:false; color:"transparent"; grabFocus:true
@@ -51,7 +50,6 @@ PopupWindow {
         }
       }
       Rectangle { Layout.fillWidth:true; height:1; color:Util.alpha(Color.popups.text,0.12) }
-      Button { Layout.fillWidth:true; leftAlign:true; text:"Open in file manager  ↗"; onClicked:{ root.openRequested(); root.visible=false } }
       Button { Layout.fillWidth:true; leftAlign:true; text:root.folder.sort==="modified" ? "Sort by name" : "Sort newest first"; onClicked:{ root.optionPicked({sort:root.folder.sort==="modified" ? "name" : "modified"}); root.visible=false } }
       Button { Layout.fillWidth:true; leftAlign:true; text:(root.folder.showHidden ? "✓  " : "    ")+"Show hidden files"; onClicked:{ root.optionPicked({showHidden:!root.folder.showHidden}); root.visible=false } }
       Rectangle { Layout.fillWidth:true; height:1; color:Util.alpha(Color.popups.text,0.12) }

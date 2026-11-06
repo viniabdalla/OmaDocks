@@ -39,8 +39,8 @@ function localPaths(urls) {
 }
 function fanLayout(count, availableHeight) {
   var capacity = Math.max(1, Math.min(8, Math.floor((availableHeight - 100) / 56)))
-  var visible = Math.min(Math.max(0, count), capacity)
-  return {visibleCount:visible, fileCount:count > capacity ? visible - 1 : visible, hasOverflow:count > capacity}
+  var files = Math.min(Math.max(0, count), capacity - 1)
+  return {visibleCount:files + 1, fileCount:files, hasOverflow:count > files}
 }
 function fanPose(index, count) {
   var t = count > 1 ? index / (count - 1) : 0
