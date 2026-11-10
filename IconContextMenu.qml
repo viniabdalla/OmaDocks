@@ -23,6 +23,7 @@ PopupWindow {
   property real originY: 0
   property Item anchorItem: null
   property string dockPosition: "bottom"
+  property bool barPinned: false
   property bool pinned: false
   property bool running: false
   property bool canOpen: false
@@ -31,6 +32,7 @@ PopupWindow {
   // is never a blind re-launch.
   property bool canNewWindow: false
 
+  signal barPinToggled()
   signal pinToggled()
   signal openRequested()
   signal newWindowRequested()
@@ -39,7 +41,7 @@ PopupWindow {
 
   color: "transparent"
   visible: false
-  grabFocus: true
+  grabFocus: false
   implicitWidth: Math.ceil(card.implicitWidth)
   implicitHeight: Math.ceil(card.implicitHeight)
 
@@ -99,7 +101,7 @@ PopupWindow {
     color: Color.popups.background
     borderSpec: Border.surfaceSpec("popups", "border", Color.popups.border, Math.max(1, Style.space(1)))
     radius: Style.cornerRadius
-    implicitWidth: Style.space(180)
+    implicitWidth: Style.space(240)
     implicitHeight: menuColumn.implicitHeight + Style.space(12)
 
     ColumnLayout {
@@ -121,6 +123,11 @@ PopupWindow {
       MenuRow {
         label: popup.pinned ? "Remove from Dock" : "Keep in Dock"
         onActivated: { popup.pinToggled(); popup.visible = false }
+      }
+      MenuRow {
+        objectName: "barFavoriteAction"
+        label: popup.barPinned ? "Remove from bar favorites" : "Add to bar favorites"
+        onActivated: { popup.barPinToggled(); popup.visible = false }
       }
       MenuRow {
         visible: popup.running

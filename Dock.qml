@@ -18,6 +18,7 @@ Item {
   property var folders: []
 
   property var pinnedIds: []
+  property var barPinnedIds: []
   // The user's manual drag order — a flat list of dock-item keys covering
   // pinned and running-unpinned items alike. Empty until they reorder
   // anything, at which point it fully describes the visible arrangement.
@@ -29,7 +30,7 @@ Item {
   // -------------------------------------------------------------- state io
   function persist() {
     if (!root.stateLoaded) return
-    root.lastWritten = DockModel.serializeState({ pinned: root.pinnedIds, order: root.iconOrder, folders: root.folders, settings: root.settings })
+    root.lastWritten = DockModel.serializeState({ pinned: root.pinnedIds, barPinned: root.barPinnedIds, order: root.iconOrder, folders: root.folders, settings: root.settings })
     stateFile.setText(root.lastWritten)
   }
 
@@ -40,6 +41,7 @@ Item {
   function loadState(text) {
     var state = DockModel.parseState(text)
     root.pinnedIds = state.pinned
+    root.barPinnedIds = state.barPinned
     root.iconOrder = state.order
     root.folders = state.folders
     root.settings = state.settings
@@ -92,6 +94,22 @@ Item {
     function toggleSettings(): string { return root.toggleSettings() ? "ok" : "unknown" }
     function openSettingsOn(screenName: string): string { return root.openSettings(screenName) ? "ok" : "unknown" }
     function toggleSettingsOn(screenName: string): string { return root.toggleSettings(screenName) ? "ok" : "unknown" }
+    function barSettingsOn(screenName: string): string {
+      var surface = root.surfaceForScreen(screenName)
+      if (!surface) return "unknown"
+      surface.openSettingsFromExternal()
+      surface.showBarFavoritesSettings()
+      return "ok"
+    }
+    function toggleFavorite(id: string): string {
+      if (!DesktopEntries.byId(id)) return "unknown"
+      root.toggleBarPin(id)
+      return "ok"
+    }
+    function barFavorites(enabled: bool): string {
+      root.setBarFavorites(enabled)
+      return "ok"
+    }
     function settings(): string { return root.openSettings() ? "ok" : "unknown" }
     function folders(): string { var s=root.surfaceForScreen(""); if(s) s.openFolderSettings(); return s ? "ok" : "unknown" }
     function openStack(path: string, view: string): string {
@@ -533,6 +551,17 @@ Item {
     root.rebuildItems()
   }
 
+  function isBarPinned(id) { return root.barPinnedIds.indexOf(id) >= 0 }
+  function toggleBarPin(id) {
+    if (!DesktopEntries.byId(id)) return
+    var next = root.barPinnedIds.slice()
+    var index = next.indexOf(id)
+    if (index < 0) next.push(id)
+    else next.splice(index, 1)
+    root.barPinnedIds = next
+    root.persist()
+  }
+
   function pinApp(id) {
     if (root.isPinned(id)) return
     var next = root.pinnedIds.slice()
@@ -664,6 +693,10 @@ Item {
     root.settings = Object.assign({}, root.settings, { showInFullscreen: !!value })
     root.persist()
   }
+  function setBarFavorites(value) {
+    root.settings = Object.assign({}, root.settings, { barFavorites: !!value })
+    root.persist()
+  }
   function setShowWhenEmpty(value) {
     root.settings = Object.assign({}, root.settings, { showWhenEmpty: !!value })
     root.persist()
@@ -729,8 +762,7 @@ Item {
     for (var i = 0; i < apps.length; i++) {
       var e = apps[i]
       if (e.noDisplay) continue
-      if (root.isPinned(e.id)) continue
-      out.push({ id: e.id, name: e.name, iconSource: root.iconForKey(e.id, e) })
+      out.push({ id: e.id, name: e.name, pinned: root.isPinned(e.id), barPinned: root.isBarPinned(e.id), iconSource: root.iconForKey(e.id, e) })
     }
     out.sort(function(a, b) { return a.name.localeCompare(b.name) })
     return out

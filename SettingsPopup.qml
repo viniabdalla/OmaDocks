@@ -16,8 +16,24 @@ import "DockModel.js" as DockModel
 // as every other Omarchy surface, so switching the OS theme (e.g. to Osaka
 // Jade) re-themes it automatically. Switching to "Custom" freezes it to
 // user-picked colors regardless of OS theme.
-PopupWindow {
+KeyboardPanel {
   id: popup
+  // Settings can open from either the dock or the top bar. Supply the
+  // native panel with that edge without coupling it to the bar service.
+  bar: panelPlacement
+  property QtObject panelPlacement: QtObject {
+    property string position: popup.topBarAnchor ? "top" : popup.dockPosition
+    property int barSize: popup.topBarAnchor ? Style.bar.sizeHorizontal : (popup.dockWindow ? (position === "left" || position === "right" ? popup.dockWindow.width : popup.dockWindow.height) : Style.bar.sizeHorizontal)
+    property var activePopout: null
+    function requestPopout(key) { activePopout = key }
+    function releasePopout(key) { if (activePopout === key) activePopout = null }
+  }
+  anchorItem: null
+  padding: 0
+  centerOnBar: true
+  contentWidth: card.implicitWidth
+  contentHeight: card.implicitHeight
+  focusTarget: activeTab === 1 || activeTab === 3 ? appSearchField : card
 
   property QtObject hostWindow: null
   // dockWindow (the surface anchorItem actually lives in) and its computed
@@ -28,10 +44,9 @@ PopupWindow {
   property QtObject dockWindow: null
   property real originX: 0
   property real originY: 0
-  property Item anchorItem: null
   property string dockPosition: "bottom"
   property bool topBarAnchor: false
-  property int activeTab: 0 // 0 = Settings, 1 = Add App
+  property int activeTab: 0 // 0 settings, 1 dock apps, 2 folders, 3 bar favorites
   property var folders: []
   property string home: ""
   signal folderAdded(string path)
@@ -62,6 +77,7 @@ PopupWindow {
   property bool borderEnabled: true
   property real borderWidth: 1
   property bool showInFullscreen: false
+  property bool barFavorites: false
   property bool showWhenEmpty: false
   // [{value, label}], the currently connected screens plus "all".
   property var monitorOptions: []
@@ -86,7 +102,9 @@ PopupWindow {
   signal borderEnabledPicked(bool value)
   signal borderWidthPicked(real value)
   signal showInFullscreenPicked(bool value)
+  signal barFavoritesPicked(bool value)
   signal showWhenEmptyPicked(bool value)
+  signal barAppPicked(string id)
   signal appPicked(string id)
   signal dismissed()
 
@@ -109,8 +127,9 @@ PopupWindow {
   // never leaves a stale highlight. Resets to the top match whenever the
   // filtered set changes, matching typical type-ahead search behavior.
   property int selectedIndex: 0
-  onFilteredEntriesChanged: popup.selectedIndex = popup.filteredEntries.length > 0 ? 0 : -1
-  onSelectedIndexChanged: if (popup.selectedIndex >= 0 && popup.activeTab === 1) appList.positionViewAtIndex(popup.selectedIndex, ListView.Contain)
+  onFilterTextChanged: selectedIndex = 0
+  onFilteredEntriesChanged: selectedIndex = Math.min(Math.max(0, selectedIndex), filteredEntries.length - 1)
+  onSelectedIndexChanged: if (popup.selectedIndex >= 0 && (popup.activeTab === 1 || popup.activeTab === 3)) appList.positionViewAtIndex(popup.selectedIndex, ListView.Contain)
 
   function activateSelected() {
     if (popup.selectedIndex < 0 || popup.selectedIndex >= popup.filteredEntries.length) return
@@ -118,49 +137,20 @@ PopupWindow {
     // screen-spanning window that doesn't track the pill's own surface, so
     // it can stay open through the resize without leaving a render artifact.
     var id = popup.filteredEntries[popup.selectedIndex].id
-    popup.appPicked(id)
+    if (popup.activeTab === 3) popup.barAppPicked(id)
+    else popup.appPicked(id)
   }
 
   onActiveTabChanged: {
-    if (activeTab === 1) {
+    if (activeTab === 1 || activeTab === 3) {
       filterText = ""
       appSearchField.text = ""
       appSearchField.forceActiveFocus()
     }
   }
 
-  color: "transparent"
-  visible: false
-  grabFocus: true
-  implicitWidth: Math.ceil(card.implicitWidth)
-  implicitHeight: Math.ceil(card.implicitHeight)
+  onOpenChanged: if (!open) popup.dismissed()
 
-  onVisibleChanged: if (!visible) popup.dismissed()
-
-  anchor {
-    window: popup.hostWindow
-    edges: Edges.Top | Edges.Left
-    gravity: Edges.Bottom | Edges.Right
-    adjustment: PopupAdjustment.Slide
-    rect.width: 1
-    rect.height: 1
-
-    onAnchoring: {
-      if (popup.topBarAnchor && popup.hostWindow) {
-        anchor.rect.x = Math.round((popup.hostWindow.width - popup.implicitWidth) / 2)
-        anchor.rect.y = Style.space(34)
-        return
-      }
-      if (!popup.anchorItem || !popup.dockWindow) return
-      var off = DockModel.anchorOffset(popup.dockPosition, popup.anchorItem.width, popup.anchorItem.height,
-        popup.implicitWidth, popup.implicitHeight, Style.space(8))
-      var local = popup.dockWindow.contentItem.mapFromItem(popup.anchorItem, off.x, off.y)
-      anchor.rect.x = Math.round(popup.originX + local.x)
-      anchor.rect.y = Math.round(popup.originY + local.y)
-    }
-  }
-
-  // Field-level label, e.g. "Position" or "Opacity — 85%" — one per control.
   component SectionLabel: Text {
     textFormat: Text.PlainText
     color: Color.popups.text
@@ -329,8 +319,10 @@ PopupWindow {
 
   BorderSurface {
     id: card
-    color: Color.popups.background
-    borderSpec: Border.surfaceSpec("popups", "border", Color.popups.border, Math.max(1, Style.space(1)))
+    focus: true
+    Keys.onEscapePressed: popup.close()
+    color: "transparent"
+    borderSpec: Border.none()
     radius: popup.shape === "square" ? 0 : Math.max(Style.cornerRadius, Style.space(14))
     // Wide enough for the Settings tab's two side-by-side columns; the
     // narrower Add App tab just sits centered within the same width.
@@ -347,7 +339,8 @@ PopupWindow {
         Layout.fillWidth: true
         spacing: Style.space(6)
         TabButton { label: "Settings"; selected: popup.activeTab === 0; onPicked: popup.activeTab = 0 }
-        TabButton { label: "Add App"; selected: popup.activeTab === 1; onPicked: popup.activeTab = 1 }
+        TabButton { label: "Apps"; selected: popup.activeTab === 1; onPicked: popup.activeTab = 1 }
+        TabButton { label: "Bar favorites"; selected: popup.activeTab === 3; onPicked: popup.activeTab = 3 }
         TabButton { label: "Folders"; selected: popup.activeTab === 2; onPicked: popup.activeTab = 2 }
       }
 
@@ -398,6 +391,18 @@ PopupWindow {
           spacing: Style.space(10)
 
           GroupHeader { text: "Placement" }
+          SectionLabel { text: "Show favorites in the bar" }
+          RowLayout {
+            ModeButton { value: "off"; label: "Off"; selected: !popup.barFavorites; onPicked: popup.barFavoritesPicked(false) }
+            ModeButton { value: "on"; label: "On"; selected: popup.barFavorites; onPicked: popup.barFavoritesPicked(true) }
+          }
+
+          Button {
+            objectName: "chooseBarFavorites"
+            Layout.fillWidth: true
+            text: "Choose bar favorites…"
+            onClicked: popup.activeTab = 3
+          }
 
           SectionLabel { text: "Screen" }
           ColumnLayout {
@@ -710,7 +715,7 @@ PopupWindow {
       // ------------------------------------------------------- Add App tab
       ColumnLayout {
         id: addAppTab
-        visible: popup.activeTab === 1
+        visible: (popup.activeTab === 1 || popup.activeTab === 3)
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -742,7 +747,7 @@ PopupWindow {
           }
           Keys.onReturnPressed: function(event) { popup.activateSelected(); event.accepted = true }
           Keys.onEnterPressed: function(event) { popup.activateSelected(); event.accepted = true }
-          Keys.onEscapePressed: function(event) { popup.visible = false; event.accepted = true }
+          Keys.onEscapePressed: function(event) { popup.open = false; event.accepted = true }
         }
 
         ListView {
@@ -790,7 +795,7 @@ PopupWindow {
               anchors.verticalCenter: parent.verticalCenter
               textFormat: Text.PlainText
               elide: Text.ElideRight
-              text: row.modelData.name || row.modelData.id
+              text: ((popup.activeTab === 3 ? row.modelData.barPinned : row.modelData.pinned) ? "✓  " : "    ") + (row.modelData.name || row.modelData.id)
               color: Color.popups.text
               font.family: Style.font.family
               font.pixelSize: Style.font.bodySmall
@@ -802,7 +807,7 @@ PopupWindow {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onEntered: popup.selectedIndex = row.index
-              onClicked: popup.appPicked(row.modelData.id)
+              onClicked: { if (popup.activeTab === 3) popup.barAppPicked(row.modelData.id); else popup.appPicked(row.modelData.id) }
             }
           }
 

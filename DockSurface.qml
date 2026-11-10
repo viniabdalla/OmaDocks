@@ -196,7 +196,7 @@ Item {
     surface.openPopupItem = null
     hoverPopup.visible = false
     contextMenu.visible = false
-    settingsPopup.visible = false
+    settingsPopup.open = false
     folderMenu.visible=false
     if (folderStack.opened) folderStack.close()
   }
@@ -239,6 +239,7 @@ Item {
     surface.openPopupItem = item
     contextMenu.anchorItem = iconItem
     contextMenu.pinned = item.pinned
+    contextMenu.barPinned = controller.isBarPinned(item.key)
     contextMenu.running = item.running
     contextMenu.canOpen = item.pinned && !item.running
     contextMenu.canNewWindow = item.running && !!item.newWindowAction
@@ -256,6 +257,8 @@ Item {
     settingsPopup.customBorder = st.customBorder
     settingsPopup.customLogo = st.customLogo !== "" ? st.customLogo : String(controller.dockAccent)
   }
+
+  function showBarFavoritesSettings() { settingsPopup.activeTab = 3 }
 
   function showSettings(topBarAnchor) {
     surface.closePopups()
@@ -277,12 +280,13 @@ Item {
     settingsPopup.borderEnabled = surface.settings.borderEnabled
     settingsPopup.borderWidth = surface.settings.borderWidth
     settingsPopup.showInFullscreen = surface.settings.showInFullscreen
+    settingsPopup.barFavorites = surface.settings.barFavorites
     settingsPopup.showWhenEmpty = surface.settings.showWhenEmpty
     settingsPopup.monitorOptions = controller.monitorOptions
     settingsPopup.dockPosition = surface.position
     settingsPopup.topBarAnchor = !!topBarAnchor
     settingsPopup.activeTab = 0
-    settingsPopup.visible = true
+    settingsPopup.open = true
   }
 
   function openSettingsFromExternal() {
@@ -331,7 +335,7 @@ Item {
   }
   function showFolderMenu(folder,host,x,y) {
     hoverHideTimer.stop(); hoverPopup.visible=false
-    contextMenu.visible=false; settingsPopup.visible=false
+    contextMenu.visible=false; settingsPopup.open=false
     folderMenu.folder=folder
     folderMenu.selectedView=folderStack.opened && folderStack.folder.path===folder.path ? folderStack.currentView : folder.view
     folderMenu.hostWindow=host
@@ -868,7 +872,18 @@ Item {
     WlrLayershell.layer: surface.fullscreenOverride ? WlrLayer.Overlay : WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
-    mask: Region {}
+    // Non-grabbing popups cannot request an xdg grab from this inputless
+    // anchor. Catch outside clicks here only while settings/menu is open.
+    mask: Region {
+      width: contextMenu.visible ? popupAnchor.width : 0
+      height: contextMenu.visible ? popupAnchor.height : 0
+    }
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.AllButtons
+      enabled: contextMenu.visible
+      onPressed: surface.closePopups()
+    }
 
     anchors {
       top: true
@@ -896,6 +911,7 @@ Item {
     originY: surface.dockOriginY
     dockPosition: surface.position
     onPinToggled: if (surface.openPopupItem) controller.togglePin(surface.openPopupItem.key)
+    onBarPinToggled: if (surface.openPopupItem) controller.toggleBarPin(surface.openPopupItem.key)
     onOpenRequested: if (surface.openPopupItem) controller.launchItem(surface.openPopupItem)
     onNewWindowRequested: if (surface.openPopupItem) controller.newWindowForItem(surface.openPopupItem)
     onQuitRequested: if (surface.openPopupItem) controller.quitItem(surface.openPopupItem)
@@ -917,7 +933,8 @@ Item {
     onFolderAdded:function(path){ controller.addFolder(path) }
     onFolderUpdated:function(path,patch){ controller.updateFolder(path,patch) }
     onFolderRemoved:function(path){ controller.removeFolder(path) }
-    onAppPicked: function(id) { controller.pinApp(id) }
+    onAppPicked: function(id) { controller.togglePin(id) }
+    onBarAppPicked: function(id) { controller.toggleBarPin(id) }
     onShapePicked: function(v) { controller.setShape(v); settingsPopup.shape = v }
     onOpacityPicked: function(v) { controller.setOpacity(v); settingsPopup.opacityValue = v }
     onMagnifyPicked: function(v) { controller.setMagnify(v); settingsPopup.magnify = v }
@@ -943,6 +960,7 @@ Item {
     onBorderEnabledPicked: function(v) { controller.setBorderEnabled(v); settingsPopup.borderEnabled = v }
     onBorderWidthPicked: function(v) { controller.setBorderWidth(v); settingsPopup.borderWidth = v }
     onShowInFullscreenPicked: function(v) { controller.setShowInFullscreen(v); settingsPopup.showInFullscreen = v }
+    onBarFavoritesPicked: function(v) { controller.setBarFavorites(v); settingsPopup.barFavorites = v }
     onShowWhenEmptyPicked: function(v) { controller.setShowWhenEmpty(v); settingsPopup.showWhenEmpty = v }
     onDismissed: if (surface.openPopupKind === "settings") surface.closePopups()
   }

@@ -47,12 +47,13 @@ function defaultSettings() {
     // instead of hiding it — nothing else is using that space anyway.
     // Irrelevant (and ignored) in always-visible mode, which is already
     // permanently shown regardless of what's open.
+    barFavorites: false,
     showWhenEmpty: true
   }
 }
 
 function defaultState() {
-  return { version: 1, pinned: [], order: [], folders: [], settings: defaultSettings() }
+  return { version: 1, pinned: [], barPinned: [], order: [], folders: [], settings: defaultSettings() }
 }
 
 function clampOpacity(value) {
@@ -153,6 +154,7 @@ function normalizeSettings(raw) {
     borderEnabled: s.borderEnabled === undefined ? d.borderEnabled : !!s.borderEnabled,
     borderWidth: clampBorderWidth(s.borderWidth === undefined ? d.borderWidth : s.borderWidth),
     showInFullscreen: s.showInFullscreen === undefined ? d.showInFullscreen : !!s.showInFullscreen,
+    barFavorites: s.barFavorites === true,
     showWhenEmpty: s.showWhenEmpty === undefined ? d.showWhenEmpty : !!s.showWhenEmpty
   }
 }
@@ -214,6 +216,7 @@ function parseState(rawText) {
   return {
     version: 1,
     pinned: normalizePinned(parsed.pinned),
+    barPinned: normalizePinned(parsed.barPinned),
     order: normalizeOrder(parsed.order),
     folders: StackModel.normalizeFolders(parsed.folders),
     settings: normalizeSettings(parsed.settings)
@@ -224,6 +227,7 @@ function serializeState(state) {
   var safe = {
     version: 1,
     pinned: normalizePinned(state ? state.pinned : []),
+    barPinned: normalizePinned(state ? state.barPinned : []),
     order: normalizeOrder(state ? state.order : []),
     folders: StackModel.normalizeFolders(state ? state.folders : []),
     settings: normalizeSettings(state ? state.settings : null)
@@ -405,4 +409,12 @@ function agentAssetFile(id, assets, dark) {
   if (!dark && has(id + "-light.svg")) return id + "-light.svg"
   if (has(id + ".svg")) return id + ".svg"
   return ""
+}
+
+// Four app slots; clamp after favorites are removed or uninstalled.
+function barOffset(current, delta, count) {
+  return Math.max(0, Math.min(Math.max(0, count - 4), current + delta))
+}
+function barTooltip(text) {
+  return String(text || "").replace(/</g, "‹").replace(/>/g, "›").replace(/&/g, "＆")
 }

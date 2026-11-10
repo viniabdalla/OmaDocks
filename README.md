@@ -137,3 +137,22 @@ The new folder-stack work is also MIT licensed.
 The portable frosted background blurs a correctly positioned wallpaper crop,
 as in the inherited dock. It does not sample other application windows behind
 it. Native drag offers use [Qt Quick's Drag API](https://doc.qt.io/qt-6/qml-qtquick-drag.html).
+
+## Favorites in the Omarchy bar
+
+Enable **Show favorites in the bar** in OmaDocks settings. Use **Choose bar
+favorites…** or the **Bar favorites** tab in the existing settings menu to
+select apps. Click a row, or search and press Enter, to add/remove a favorite.
+Four icons appear beside the OmaDocks settings button; arrows or the mouse
+wheel scroll additional favorites. Hover shows names, click launches an app.
+
+Bar favorites are independent of **Keep in Dock**. Selecting an app for the
+bar never pins it in the main dock. Running apps still appear in the dock
+normally. Right-click an open app and choose **Add to bar favorites** or
+**Remove from bar favorites**. Right-clicking the bar also opens a compact
+chooser for the same selection. Esc or clicking outside closes that chooser.
+
+The independent `barPinned` list lives alongside `pinned` in
+`~/.local/state/omadocks/state.json`. Old main-dock pins are never implicitly
+copied into bar favorites. Empty bar favorites leave the settings button
+accessible.
