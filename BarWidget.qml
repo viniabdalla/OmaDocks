@@ -119,6 +119,7 @@ BarWidget {
         required property string modelData
         readonly property var entry: DesktopEntries.byId(modelData)
         appId: modelData
+        iconBackground: modelData.toLowerCase() === "oracle"
         appName: entry ? entry.name : modelData
         bar: root.bar
         groupItem: root

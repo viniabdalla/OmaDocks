@@ -49,6 +49,20 @@ TestCase {
     removed.target=item; activated.target=item
     return item
   }
+  function test_artwork_and_highlight_fit_small_horizontal_and_vertical_slots() {
+    for (var dimensions of [[27,26],[26,27],[20,18]]) {
+      var item=createTemporaryObject(shortcutComponent,group,{width:dimensions[0],height:dimensions[1],iconSize:24})
+      var artwork=findChild(item,"shortcutIcon")
+      verify(artwork)
+      verify(artwork.x>=4 && artwork.y>=4,"icon needs a clear margin inside the bar")
+      verify(artwork.x+artwork.width<=item.width-4 && artwork.y+artwork.height<=item.height-4)
+      var highlight=findChild(item,"shortcutHighlight")
+      verify(highlight)
+      verify(highlight.x>=2 && highlight.y>=2,"hover feedback must fit the bar too")
+      verify(highlight.x+highlight.width<=item.width-2 && highlight.y+highlight.height<=item.height-2)
+      item.destroy()
+    }
+  }
   function test_hover_exposes_plain_tooltip_state() {
     var item=makeShortcut()
     item.appName='<img src="https://example.invalid/"> & Editor'

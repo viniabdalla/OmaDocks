@@ -53,3 +53,7 @@ manualmente nesta sessão. O reinício do shell foi autorizado para ativação.
 ## Correção visual após feedback
 
 Removidos o fundo e o contorno: a Toolbar agora mostra somente ícones sobre a barra. Teste `test_toolbar.py` passou e novas capturas reais foram conferidas após aplicar. A seleção atual do usuário (Terminal e navegador, sem Herdr) foi preservada. `preview.png` mostra a prévia atual sem fundo ou contorno; `live-groups.png` e `live-bar.png` mostram o visual atual.
+
+## Encaixe dos ícones e fundo do Oracle
+
+Após feedback visual no omarchy2, os ícones agora respeitam margem mínima de 4 px por lado dentro do slot; o destaque de hover fica a 2 px das bordas. Em uma barra de 26 px, a arte ocupa no máximo 18 px. O atalho Oracle (logo Trópico) recebe um fundo escuro arredondado próprio; os demais atalhos e o grupo Toolbar não ganham fundo adicional. Teste de regressão reproduziu o excesso de tamanho anterior e passou após a correção. Suite: 19 JavaScript, 20 Python e 26 resultados Qt Quick. Revisão independente sem achados.

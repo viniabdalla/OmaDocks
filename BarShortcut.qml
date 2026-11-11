@@ -11,6 +11,9 @@ Item {
   property Item groupItem: parent
   property var bar: null
   property int iconSize: 22
+  property bool iconBackground: false
+  // Keep artwork inside the bar's inner surface in either orientation.
+  readonly property int visualIconSize: Math.max(0, Math.min(iconSize, Math.floor(width) - 8, Math.floor(height) - 8))
   property int dragThreshold: 8
   readonly property string tooltipText: DockModel.barTooltip(appName)
   readonly property bool tooltipHovered: visible && enabled && pointer.containsMouse && !pointer.dragging
@@ -36,15 +39,25 @@ Item {
   Component.onDestruction: hideTooltip()
 
   Rectangle {
+    objectName: "shortcutHighlight"
     anchors.centerIn: parent
-    width: Math.min(root.width, root.iconSize + 8)
+    width: Math.max(0, Math.min(root.width, root.height) - 4)
     height: width
     radius: 6
     color: root.removeArmed ? "#40ff6666" : (pointer.containsMouse ? "#18ffffff" : "transparent")
   }
-  Image {
+  Rectangle {
+    objectName: "shortcutBackground"
     anchors.centerIn: parent
-    width: root.iconSize; height: width
+    width: root.visualIconSize; height: width
+    radius: Math.min(3, width / 4)
+    visible: root.iconBackground
+    color: "#101b2b"
+  }
+  Image {
+    objectName: "shortcutIcon"
+    anchors.centerIn: parent
+    width: root.visualIconSize; height: width
     fillMode: Image.PreserveAspectFit
     source: root.iconSource
     sourceSize: Qt.size(width * Screen.devicePixelRatio, height * Screen.devicePixelRatio)
