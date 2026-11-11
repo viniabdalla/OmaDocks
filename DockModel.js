@@ -71,6 +71,16 @@ function toolbarKey(id, defaults) {
   return id
 }
 
+function reorderPinned(ids, id, targetId) {
+  var next = ids.slice()
+  var from = next.indexOf(id)
+  var to = next.indexOf(targetId)
+  if (from < 0 || to < 0 || from === to) return next
+  next.splice(from, 1)
+  next.splice(to, 0, id)
+  return next
+}
+
 function withoutPinned(ids, id) {
   return ids.filter(function(key) { return key !== id })
 }

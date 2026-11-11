@@ -81,13 +81,15 @@ or **Remover da Toolbar**. Toolbar selection is saved as `toolbarPinned`,
 independent of Trópico's `barPinned` favorites and the main dock's `pinned` list.
 The Terminal/browser shortcuts follow system defaults, including later changes.
 
-For **both Toolbar and Trópico favorites**, drag an app icon outside its own
-group and release to remove that shortcut. Release inside, return before
-releasing, or press Escape to keep it. This never uninstalls an app or changes
-another group's selection. The icon dims while removal is armed.
+For **both Toolbar and Trópico favorites**, dragging an app icon outside the
+bar never removes it. Inside **Toolbar**, drag an icon onto another slot and
+release to reorder it; the order is saved. Dropping outside leaves the list
+unchanged. Manage selection explicitly through the main dock's
+right-click menu or the existing settings tabs. Pointer movement also suppresses
+launching, so an accidental drag does not open an app.
 
 Move the **whole Toolbar** using Omarchy's bar layout controls, or drag the
-group's blank edge padding. Dragging an app icon handles that shortcut only.
+group's blank edge padding. Dragging an app icon leaves its selection unchanged.
 The companion widget id is `io.github.viniabdalla.omadocks.toolbar`; the installer
 registers it separately and preserves its position on later runs.
 

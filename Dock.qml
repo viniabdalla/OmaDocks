@@ -116,6 +116,7 @@ Item {
     }
     function removeFavorite(id: string): string { root.removeBarPin(id); return "ok" }
     function toggleToolbar(id: string): string { return root.toggleToolbarPin(id) ? "ok" : "unknown" }
+    function moveToolbar(id: string, targetId: string): string { return root.moveToolbarApp(id, targetId) ? "ok" : "unknown" }
     function removeToolbar(id: string): string { root.removeToolbarPin(id); return "ok" }
     function toolbarStatus(): string { return JSON.stringify({apps: root.toolbarPinnedIds, defaults: toolbarApps.defaults}) }
     function barFavorites(enabled: bool): string {
@@ -577,6 +578,14 @@ Item {
     var key = root.toolbarKey(id)
     root.toolbarPinnedIds = root.toolbarPinnedIds.filter(function(saved) { return root.toolbarKey(saved) !== key })
     root.persist()
+  }
+  function moveToolbarApp(id, targetId) {
+    if (root.toolbarPinnedIds.indexOf(id) < 0 || root.toolbarPinnedIds.indexOf(targetId) < 0) return false
+    if (id !== targetId) {
+      root.toolbarPinnedIds = DockModel.reorderPinned(root.toolbarPinnedIds, id, targetId)
+      root.persist()
+    }
+    return true
   }
   function toggleToolbarPin(id) {
     var key = root.toolbarKey(id)

@@ -71,3 +71,17 @@ test('Toolbar launch commands follow defaults and run Herdr inside a terminal',(
  assert.deepEqual(Array.from(m.toolbarCommand('omadocks-herdr')),['omarchy-launch-terminal','--app-id=herdr','--title=Herdr','--','herdr']);
  assert.deepEqual(Array.from(m.toolbarCommand('editor')),['uwsm-app','--','gtk-launch','editor.desktop']);
 });
+test('Toolbar reordering preserves every shortcut and other groups across save/load',()=>{
+ const state=m.parseState('{"pinned":["main"],"barPinned":["favorite"],"toolbarPinned":["terminal","herdr","browser"]}');
+ state.toolbarPinned=m.reorderPinned(state.toolbarPinned,'browser','terminal');
+ assert.deepEqual(Array.from(state.toolbarPinned),['browser','terminal','herdr']);
+ state.toolbarPinned=m.reorderPinned(state.toolbarPinned,'browser','herdr');
+ assert.deepEqual(Array.from(state.toolbarPinned),['terminal','herdr','browser']);
+ for(const pair of [['missing','terminal'],['terminal','missing'],['terminal','terminal']]) {
+  assert.deepEqual(Array.from(m.reorderPinned(state.toolbarPinned,...pair)),['terminal','herdr','browser']);
+ }
+ const saved=m.parseState(m.serializeState(state));
+ assert.deepEqual(Array.from(saved.toolbarPinned),['terminal','herdr','browser']);
+ assert.deepEqual(Array.from(saved.pinned),['main']);
+ assert.deepEqual(Array.from(saved.barPinned),['favorite']);
+});

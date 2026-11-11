@@ -115,7 +115,6 @@ BarWidget {
       model: root.showFavorites ? root.visibleApps : []
       delegate: BarShortcut {
         id: appButton
-        BarDragFocus { anchorItem: appButton; active: appButton.dragging }
         required property string modelData
         readonly property var entry: DesktopEntries.byId(modelData)
         appId: modelData
@@ -132,9 +131,6 @@ BarWidget {
         }
         onActivated: function(id) {
           if (appButton.entry) Quickshell.execDetached(["uwsm-app", "--", "gtk-launch", id + ".desktop"])
-        }
-        onRemoveRequested: function(id) {
-          Quickshell.execDetached(["omarchy-shell", "io.github.viniabdalla.omadocks", "removeFavorite", id])
         }
         onSecondaryClicked: root.manageApps()
         onWheelMoved: function(delta) { root.scroll(delta < 0 ? 1 : -1) }

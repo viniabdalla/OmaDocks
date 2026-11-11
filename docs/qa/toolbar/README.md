@@ -57,3 +57,11 @@ Removidos o fundo e o contorno: a Toolbar agora mostra somente ícones sobre a b
 ## Encaixe dos ícones e fundo do Oracle
 
 Após feedback visual no omarchy2, os ícones agora respeitam margem mínima de 4 px por lado dentro do slot; o destaque de hover fica a 2 px das bordas. Em uma barra de 26 px, a arte ocupa no máximo 18 px. O atalho Oracle (logo Trópico) recebe um fundo escuro arredondado próprio; os demais atalhos e o grupo Toolbar não ganham fundo adicional. Teste de regressão reproduziu o excesso de tamanho anterior e passou após a correção. Suite: 19 JavaScript, 20 Python e 26 resultados Qt Quick. Revisão independente sem achados.
+
+## Remoção por arraste desabilitada por solicitação do usuário
+
+O usuário relatou remoções acidentais e pediu para desabilitar o recurso sem investigar/corrigir o gesto. O componente não emite mais remoção ao soltar fora, e os handlers de remoção por arraste foram desconectados dos dois widgets. O arraste também não toma mais foco de teclado. Os testes de gesto passaram a exigir zero remoções ao soltar fora; menu contextual e configurações continuam sendo ações explícitas de seleção. Terminal e Herdr foram restaurados na Toolbar local. Esta seção substitui os resultados históricos que validavam remoção por arraste.
+
+## Reorganização interna da Toolbar
+
+Por esclarecimento do usuário, o arraste interno na Toolbar permite reorganizar sem adicionar ou remover aplicativos. A soltura dentro determina o slot alvo; a soltura fora não emite reorganização nem remoção. O controlador persiste a ordem e rejeita IDs ausentes. Testes cobrem movimento para esquerda/direita, IDs inválidos, persistência e preservação das outras listas, gestos dentro/fora e mapeamento dos slots nas duas orientações.

@@ -33,20 +33,21 @@ TestCase {
     mouseClick(slot.shortcut,16,18)
     compare(activated.count,1); compare(slot.widgetMoves,0)
     mousePress(slot.shortcut,16,18); mouseMove(slot.shortcut,16,90); mouseRelease(slot.shortcut,16,90)
-    compare(removed.count,1); compare(slot.widgetMoves,0)
+    compare(removed.count,0); compare(slot.widgetMoves,0)
     mouseClick(slot,150,20); compare(slot.widgetMoves,1)
     slot.inputPriority.destroy()
     wait(0)
     compare(slot.widgetRoom.z,0)
   }
+  SignalSpy { id: reordered; signalName: "reorderRequested" }
   SignalSpy { id: removed; signalName: "removeRequested" }
   SignalSpy { id: activated; signalName: "activated" }
   Item { id: group; x:100; y:80; width:120; height:36 }
-  function init() { removed.clear(); activated.clear() }
-  function cleanup() { removed.target=null; activated.target=null }
+  function init() { removed.clear(); activated.clear(); reordered.clear() }
+  function cleanup() { removed.target=null; activated.target=null; reordered.target=null }
   function makeShortcut() {
     var item=createTemporaryObject(shortcutComponent,group,{width:32,height:36,groupItem:group,appId:"editor",appName:"Editor",iconSource:""})
-    removed.target=item; activated.target=item
+    removed.target=item; activated.target=item; reordered.target=item
     return item
   }
   function test_artwork_and_highlight_fit_small_horizontal_and_vertical_slots() {
@@ -77,10 +78,20 @@ TestCase {
     mouseClick(item,16,18)
     compare(activated.count,1); compare(removed.count,0)
   }
-  function test_release_outside_removes_once_without_launching() {
+  function test_release_outside_keeps_shortcut_without_launching() {
     var item=makeShortcut()
     mousePress(item,16,18); mouseMove(item,16,90); mouseRelease(item,16,90)
-    compare(removed.count,1); compare(removed.signalArguments[0][0],"editor"); compare(activated.count,0)
+    compare(removed.count,0); compare(activated.count,0)
+  }
+  function test_inside_drag_requests_reorder_but_outside_never_does() {
+    var item=makeShortcut()
+    mousePress(item,16,18); mouseMove(item,65,18); mouseRelease(item,65,18)
+    compare(reordered.count,1); compare(reordered.signalArguments[0][0],"editor")
+    compare(reordered.signalArguments[0][1],65); compare(reordered.signalArguments[0][2],18)
+    compare(removed.count,0); compare(activated.count,0)
+    reordered.clear()
+    mousePress(item,16,18); mouseMove(item,16,90); mouseRelease(item,16,90)
+    compare(reordered.count,0); compare(removed.count,0)
   }
   function test_inside_and_returned_drag_keep_shortcut() {
     var item=makeShortcut()

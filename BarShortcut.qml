@@ -1,8 +1,9 @@
 import QtQuick
 import "DockModel.js" as DockModel
 
-// Shortcut input stays local to its group. In particular, this is not a
-// native file drag: releasing outside only changes a saved shortcut list.
+// Moving a shortcut never removes it. Pointer movement is tracked only
+// to suppress accidental clicks and permit reordering inside its own group.
+// Adding/removing shortcuts belongs to explicit menus.
 Item {
   id: root
   property string appId: ""
@@ -18,8 +19,9 @@ Item {
   readonly property string tooltipText: DockModel.barTooltip(appName)
   readonly property bool tooltipHovered: visible && enabled && pointer.containsMouse && !pointer.dragging
   readonly property bool dragging: pointer.dragging
-  readonly property bool removeArmed: dragging && pointer.outside
+  readonly property bool removeArmed: false
   signal activated(string id)
+  signal reorderRequested(string id, real x, real y)
   signal removeRequested(string id)
   signal secondaryClicked()
   signal wheelMoved(int delta)
@@ -69,7 +71,7 @@ Item {
     anchors.fill: parent
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    cursorShape: dragging ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+    cursorShape: Qt.PointingHandCursor
     property point pressPoint: Qt.point(0, 0)
     property bool dragging: false
     property bool cancelled: false
@@ -90,13 +92,15 @@ Item {
     }
     onReleased: function(mouse) {
       var wasDragging = dragging
-      var point = root.mapToItem(root.groupItem, mouse.x, mouse.y)
-      var releasedOutside = point.x < 0 || point.y < 0 || point.x >= root.groupItem.width || point.y >= root.groupItem.height
       dragging = false
       if (cancelled) return
       if (wasDragging) {
-        if (releasedOutside) root.removeRequested(root.appId)
-      } else if (mouse.button === Qt.LeftButton && containsMouse) root.activated(root.appId)
+        var point = root.mapToItem(root.groupItem, mouse.x, mouse.y)
+        if (point.x >= 0 && point.y >= 0 && point.x < root.groupItem.width && point.y < root.groupItem.height)
+          root.reorderRequested(root.appId, point.x, point.y)
+        return
+      }
+      if (mouse.button === Qt.LeftButton && containsMouse) root.activated(root.appId)
       else if (mouse.button === Qt.RightButton && containsMouse) root.secondaryClicked()
     }
     onCanceled: { cancelled = true; dragging = false; root.hideTooltip() }

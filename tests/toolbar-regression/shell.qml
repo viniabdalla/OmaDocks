@@ -44,6 +44,9 @@ ShellRoot {
         root.check(toolbar.shortcuts[0].name==="Terminal" && toolbar.shortcuts[1].name==="Herdr" && toolbar.shortcuts[2].name==="Navegador","initial shortcut order")
         root.check(toolbar.width===toolbar.slotSize*3+toolbar.padding*2,"compact Toolbar width")
         root.check(vertical.height===vertical.slotSize*3+vertical.padding*2,"vertical Toolbar height")
+        root.check(toolbar.dropTargetId(-1,10)==="" && toolbar.dropTargetId(toolbar.width,10)==="","outside drop must not reorder")
+        root.check(toolbar.dropTargetId(toolbar.padding+toolbar.slotSize*2+1,toolbar.height/2)===toolbar.shortcuts[2].id,"horizontal reorder target")
+        root.check(vertical.dropTargetId(vertical.width/2,vertical.padding+vertical.slotSize+1)===vertical.shortcuts[1].id,"vertical reorder target")
         // Exercise the widgets' actual file watchers with an intentionally
         // empty selection and then a saved selection on the next write.
         var next=JSON.parse(state.text()); next.toolbarPinned=[]

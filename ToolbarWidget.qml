@@ -19,6 +19,18 @@ BarWidget {
   implicitWidth: shortcuts.length ? (vertical ? barSize : shortcuts.length * slotSize + padding * 2) : 0
   implicitHeight: shortcuts.length ? (vertical ? shortcuts.length * slotSize + padding * 2 : barSize) : 0
 
+  function dropTargetId(x, y) {
+    if (x < 0 || y < 0 || x >= width || y >= height || !shortcuts.length) return ""
+    var position = vertical ? y : x
+    var index = Math.max(0, Math.min(shortcuts.length - 1, Math.floor((position - padding) / slotSize)))
+    return shortcuts[index].id
+  }
+  function reorderShortcut(id, x, y) {
+    var targetId = dropTargetId(x, y)
+    if (targetId && targetId !== id)
+      Quickshell.execDetached(["omarchy-shell", "io.github.viniabdalla.omadocks", "moveToolbar", id, targetId])
+  }
+
   BarInputPriority {}
   ToolbarApps { id: apps }
   FileView {
@@ -36,7 +48,6 @@ BarWidget {
       model: root.shortcuts
       delegate: BarShortcut {
         id: shortcut
-        BarDragFocus { anchorItem: shortcut; active: shortcut.dragging }
         required property var modelData
         objectName: "toolbarShortcut-" + modelData.id
         appId: modelData.id
@@ -47,8 +58,8 @@ BarWidget {
         bar: root.bar
         implicitWidth: root.vertical ? root.barSize : root.slotSize
         implicitHeight: root.vertical ? root.slotSize : root.barSize
+        onReorderRequested: function(id, x, y) { root.reorderShortcut(id, x, y) }
         onActivated: function(id) { Quickshell.execDetached(DockModel.toolbarCommand(id)) }
-        onRemoveRequested: function(id) { Quickshell.execDetached(["omarchy-shell", "io.github.viniabdalla.omadocks", "removeToolbar", id]) }
       }
     }
   }
