@@ -52,8 +52,31 @@ function defaultSettings() {
   }
 }
 
+function defaultToolbar() {
+  return ["omadocks-default-terminal", "omadocks-herdr", "omadocks-default-browser"]
+}
+
+function toolbarCommand(id) {
+  if (id === "omadocks-default-terminal") return ["omarchy-launch-terminal"]
+  if (id === "omadocks-default-browser") return ["omarchy-launch-browser"]
+  if (id === "omadocks-herdr") return ["omarchy-launch-terminal", "--app-id=herdr", "--title=Herdr", "--", "herdr"]
+  return ["uwsm-app", "--", "gtk-launch", id + ".desktop"]
+}
+
+function toolbarKey(id, defaults) {
+  defaults = defaults || {}
+  if (id && id === defaults.terminal) return "omadocks-default-terminal"
+  if (id && id === defaults.browser) return "omadocks-default-browser"
+  if (id && id === defaults.herdr) return "omadocks-herdr"
+  return id
+}
+
+function withoutPinned(ids, id) {
+  return ids.filter(function(key) { return key !== id })
+}
+
 function defaultState() {
-  return { version: 1, pinned: [], barPinned: [], order: [], folders: [], settings: defaultSettings() }
+  return { version: 1, pinned: [], barPinned: [], toolbarPinned: defaultToolbar(), order: [], folders: [], settings: defaultSettings() }
 }
 
 function clampOpacity(value) {
@@ -217,6 +240,7 @@ function parseState(rawText) {
     version: 1,
     pinned: normalizePinned(parsed.pinned),
     barPinned: normalizePinned(parsed.barPinned),
+    toolbarPinned: parsed.toolbarPinned === undefined ? defaultToolbar() : normalizePinned(parsed.toolbarPinned),
     order: normalizeOrder(parsed.order),
     folders: StackModel.normalizeFolders(parsed.folders),
     settings: normalizeSettings(parsed.settings)
@@ -228,6 +252,7 @@ function serializeState(state) {
     version: 1,
     pinned: normalizePinned(state ? state.pinned : []),
     barPinned: normalizePinned(state ? state.barPinned : []),
+    toolbarPinned: !state || state.toolbarPinned === undefined ? defaultToolbar() : normalizePinned(state.toolbarPinned),
     order: normalizeOrder(state ? state.order : []),
     folders: StackModel.normalizeFolders(state ? state.folders : []),
     settings: normalizeSettings(state ? state.settings : null)

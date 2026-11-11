@@ -33,7 +33,7 @@ KeyboardPanel {
   centerOnBar: true
   contentWidth: card.implicitWidth
   contentHeight: card.implicitHeight
-  focusTarget: activeTab === 1 || activeTab === 3 ? appSearchField : card
+  focusTarget: activeTab === 1 || activeTab === 3 || activeTab === 4 ? appSearchField : card
 
   property QtObject hostWindow: null
   // dockWindow (the surface anchorItem actually lives in) and its computed
@@ -46,7 +46,7 @@ KeyboardPanel {
   property real originY: 0
   property string dockPosition: "bottom"
   property bool topBarAnchor: false
-  property int activeTab: 0 // 0 settings, 1 dock apps, 2 folders, 3 bar favorites
+  property int activeTab: 0 // 0 settings, 1 dock apps, 2 folders, 3 bar favorites, 4 Toolbar
   property var folders: []
   property string home: ""
   signal folderAdded(string path)
@@ -104,6 +104,7 @@ KeyboardPanel {
   signal showInFullscreenPicked(bool value)
   signal barFavoritesPicked(bool value)
   signal showWhenEmptyPicked(bool value)
+  signal toolbarAppPicked(string id)
   signal barAppPicked(string id)
   signal appPicked(string id)
   signal dismissed()
@@ -117,7 +118,7 @@ KeyboardPanel {
     var needle = filterText.toLowerCase()
     var out = []
     for (var i = 0; i < allEntries.length; i++) {
-      if (matches(allEntries[i], needle)) out.push(allEntries[i])
+      if ((popup.activeTab === 4 || !allEntries[i].toolbarOnly) && matches(allEntries[i], needle)) out.push(allEntries[i])
     }
     return out
   }
@@ -129,7 +130,7 @@ KeyboardPanel {
   property int selectedIndex: 0
   onFilterTextChanged: selectedIndex = 0
   onFilteredEntriesChanged: selectedIndex = Math.min(Math.max(0, selectedIndex), filteredEntries.length - 1)
-  onSelectedIndexChanged: if (popup.selectedIndex >= 0 && (popup.activeTab === 1 || popup.activeTab === 3)) appList.positionViewAtIndex(popup.selectedIndex, ListView.Contain)
+  onSelectedIndexChanged: if (popup.selectedIndex >= 0 && (popup.activeTab === 1 || popup.activeTab === 3 || popup.activeTab === 4)) appList.positionViewAtIndex(popup.selectedIndex, ListView.Contain)
 
   function activateSelected() {
     if (popup.selectedIndex < 0 || popup.selectedIndex >= popup.filteredEntries.length) return
@@ -137,12 +138,13 @@ KeyboardPanel {
     // screen-spanning window that doesn't track the pill's own surface, so
     // it can stay open through the resize without leaving a render artifact.
     var id = popup.filteredEntries[popup.selectedIndex].id
-    if (popup.activeTab === 3) popup.barAppPicked(id)
+    if (popup.activeTab === 4) popup.toolbarAppPicked(id)
+    else if (popup.activeTab === 3) popup.barAppPicked(id)
     else popup.appPicked(id)
   }
 
   onActiveTabChanged: {
-    if (activeTab === 1 || activeTab === 3) {
+    if (activeTab === 1 || activeTab === 3 || activeTab === 4) {
       filterText = ""
       appSearchField.text = ""
       appSearchField.forceActiveFocus()
@@ -341,6 +343,7 @@ KeyboardPanel {
         TabButton { label: "Settings"; selected: popup.activeTab === 0; onPicked: popup.activeTab = 0 }
         TabButton { label: "Apps"; selected: popup.activeTab === 1; onPicked: popup.activeTab = 1 }
         TabButton { label: "Bar favorites"; selected: popup.activeTab === 3; onPicked: popup.activeTab = 3 }
+        TabButton { label: "Toolbar"; selected: popup.activeTab === 4; onPicked: popup.activeTab = 4 }
         TabButton { label: "Folders"; selected: popup.activeTab === 2; onPicked: popup.activeTab = 2 }
       }
 
@@ -715,7 +718,7 @@ KeyboardPanel {
       // ------------------------------------------------------- Add App tab
       ColumnLayout {
         id: addAppTab
-        visible: (popup.activeTab === 1 || popup.activeTab === 3)
+        visible: (popup.activeTab === 1 || popup.activeTab === 3 || popup.activeTab === 4)
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -795,7 +798,7 @@ KeyboardPanel {
               anchors.verticalCenter: parent.verticalCenter
               textFormat: Text.PlainText
               elide: Text.ElideRight
-              text: ((popup.activeTab === 3 ? row.modelData.barPinned : row.modelData.pinned) ? "✓  " : "    ") + (row.modelData.name || row.modelData.id)
+              text: ((popup.activeTab === 4 ? row.modelData.toolbarPinned : (popup.activeTab === 3 ? row.modelData.barPinned : row.modelData.pinned)) ? "✓  " : "    ") + (row.modelData.name || row.modelData.id)
               color: Color.popups.text
               font.family: Style.font.family
               font.pixelSize: Style.font.bodySmall
@@ -807,7 +810,7 @@ KeyboardPanel {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onEntered: popup.selectedIndex = row.index
-              onClicked: { if (popup.activeTab === 3) popup.barAppPicked(row.modelData.id); else popup.appPicked(row.modelData.id) }
+              onClicked: { if (popup.activeTab === 4) popup.toolbarAppPicked(row.modelData.id); else if (popup.activeTab === 3) popup.barAppPicked(row.modelData.id); else popup.appPicked(row.modelData.id) }
             }
           }
 

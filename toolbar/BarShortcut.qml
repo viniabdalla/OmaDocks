@@ -1,0 +1,1 @@
+../BarShortcut.qml

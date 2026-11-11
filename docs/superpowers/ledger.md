@@ -155,3 +155,22 @@ List selection; three hover-only cascades and Escape during leaf drag; Ctrl
 terminal drop; folder pinning, reorder and drag-away unpin retaining its source.
 Sanitized results and requirement audit are in docs/qa/. Final automated suite
 is 10 JS + 15 Python + 13 Qt Quick results including lifecycle hooks.
+
+## 2026-11-11 — Toolbar
+
+- Escopo aprovado nesta conversa: widget independente e movível, apenas três ícones iniciais (Terminal padrão, Herdr e navegador padrão), lista toolbarPinned, aba Toolbar, ações contextuais em português e remoção por arraste para fora nos dois grupos.
+- Execução no checkout solicitado pelo usuário, sem commits/push. Plano e especificação em docs/superpowers/{plans,specs}/2026-11-11-toolbar.md.
+- Estado: defaults semeados em arquivos antigos, lista vazia preservada, três listas independentes; lançadores seguem os padrões do sistema. Herdr é CLI e abre dentro do Terminal padrão.
+- Input: conteúdo dos dois widgets fica acima do mover nativo, com margem livre para mover o grupo inteiro. Foco de teclado emprestado só durante arraste, restaurando a configuração anterior. Escape, perda de grab e soltura dentro não removem.
+- Revisão independente encontrou perda do alvo de movimento do grupo existente. Corrigido com margem livre; regressão reproduzida e teste passou após a correção.
+- Integração identificou prioridade incorreta do indicador legado sobre o widget principal ao escolher a posição inicial. Corrigida e coberta por teste: preferir sempre o widget OmaDocks quando presente.
+- Ativação parcial retirada: rescanPlugins reconheceu o companion mas o controlador carregado permaneceu com os métodos antigos (toolbarStatus ausente). Não reiniciado o shell por restrição explícita do AGENTS.md; configuração anterior restaurada. O novo plugin permanece disponível via symlink para toolbar/.
+- Backup e configuração proposta para ativação: ~/.local/state/omadocks/toolbar-backups/20261111-123333-486117/{shell.json,state.json,pending-shell.json}. A ativação após autorização deve recalcular configure_toolbar sobre a configuração atual para preservar alterações posteriores.
+
+- Histórico operacional registrado e verificado com status parcial; task_id a99e7462-ea02-4de0-a070-7dbbd1f49954. Implementação e testes concluídos; falta somente ativação após autorização de reinício.
+
+- Ativação concluída após autorização explícita do usuário ("s"): configure_toolbar sobre config atual → Toolbar em centerEnd junto do OmaDocks → omarchy restart shell. toolbarStatus confirmou os três atalhos e padrões Ghostty/Chrome; estado anterior preservado em todos os demais campos. Captura real inspecionada em docs/qa/toolbar/live-bar.png. Backup: ~/.local/state/omadocks/toolbar-backups/20261111-132320-513519/. Sem teste manual de arraste/lançamento. Histórico atualizado com o mesmo task_id.
+
+- Correção do histórico: a tentativa de atualizar o mesmo UUID de parcial para concluído foi rejeitada pelo serviço (invalid_record_or_task_id_conflict), inclusive mantendo os campos originais. A consulta confirmou que o registro segue parcial. Não foi criado outro UUID nem histórico paralelo. Ativação da Toolbar concluída; falha limitada à atualização do registro operacional.
+
+- Correção visual solicitada pelo usuário: removidos BorderSurface/fundo/contorno da Toolbar; somente ícones. Teste test_toolbar.py passou, shell reiniciado com autorização vigente e captura real conferida. Seleção atual preservada (Terminal e navegador; Herdr já removido da lista pelo usuário). Histórico registrado e verificado: d99b5f70-afe6-4177-9476-c764725ff998.

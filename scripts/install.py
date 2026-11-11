@@ -10,12 +10,13 @@ from datetime import datetime
 from pathlib import Path
 
 PLUGIN_ID='io.github.viniabdalla.omadocks'
+TOOLBAR_ID=PLUGIN_ID+'.toolbar'
 OLD_ID='io.github.silkvain.dockseid'
 
 
 def configure(original):
     cfg=copy.deepcopy(original)
-    cfg['plugins']=[p for p in cfg.get('plugins',[]) if (p.get('id') if isinstance(p,dict) else p) not in {OLD_ID,PLUGIN_ID}]
+    cfg['plugins']=[p for p in cfg.get('plugins',[]) if (p.get('id') if isinstance(p,dict) else p) not in {OLD_ID,PLUGIN_ID,TOOLBAR_ID}]
     cfg['plugins'].append({'id':PLUGIN_ID})
     cfg['disabledPlugins']=[p for p in cfg.get('disabledPlugins',[]) if p!=PLUGIN_ID]
     if OLD_ID not in cfg['disabledPlugins']: cfg['disabledPlugins'].append(OLD_ID)
@@ -23,6 +24,30 @@ def configure(original):
     ids=[entry.get('id') for entries in layout.values() if isinstance(entries,list) for entry in entries if isinstance(entry,dict)]
     if 'viniabdalla.indicators' not in ids and PLUGIN_ID not in ids:
         layout.setdefault('center',[]).append({'id':PLUGIN_ID})
+    return configure_toolbar(cfg)
+
+
+def configure_toolbar(original):
+    """Add only Toolbar, leaving existing plugins and widget placement intact."""
+    cfg=copy.deepcopy(original)
+    plugins=cfg.setdefault('plugins',[])
+    if not any((p.get('id') if isinstance(p,dict) else p)==TOOLBAR_ID for p in plugins):
+        plugins.append({'id':TOOLBAR_ID})
+    cfg['disabledPlugins']=[p for p in cfg.get('disabledPlugins',[]) if p!=TOOLBAR_ID]
+    layout=cfg.setdefault('bar',{}).setdefault('layout',{})
+    entries=[e for group in layout.values() if isinstance(group,list) for e in group if isinstance(e,dict)]
+    if any(e.get('id')==TOOLBAR_ID for e in entries):
+        return cfg
+    # Prefer the real bar-shortcut group; legacy indicators can be in a
+    # different section and should only be used when no OmaDocks widget exists.
+    for anchor in (PLUGIN_ID,'viniabdalla.indicators'):
+        for group in layout.values():
+            if not isinstance(group,list): continue
+            for index,entry in enumerate(group):
+                if isinstance(entry,dict) and entry.get('id')==anchor:
+                    group.insert(index+1,{'id':TOOLBAR_ID})
+                    return cfg
+    layout.setdefault('center',[]).append({'id':TOOLBAR_ID})
     return cfg
 
 
@@ -41,6 +66,10 @@ def install():
     else:
         if os.path.lexists(link): shutil.move(str(link),str(backup/'previous-plugin'))
         link.symlink_to(project,target_is_directory=True)
+    toolbar_link=link.parent/TOOLBAR_ID
+    if not (toolbar_link.is_symlink() and toolbar_link.resolve()==project/'toolbar'):
+        if os.path.lexists(toolbar_link): shutil.move(str(toolbar_link),str(backup/'previous-toolbar-plugin'))
+        toolbar_link.symlink_to(project/'toolbar',target_is_directory=True)
     updated=configure(original)
     config.parent.mkdir(parents=True,exist_ok=True)
     tmp=config.with_name('shell.json.omadocks-tmp')

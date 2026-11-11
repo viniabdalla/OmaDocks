@@ -31,6 +31,8 @@ BarWidget {
   function close() { root.managing = false }
 
 
+  BarInputPriority {}
+
   property var dockState: DockModel.defaultState()
   property int firstApp: 0
   readonly property bool showFavorites: dockState.settings.barFavorites
@@ -40,8 +42,11 @@ BarWidget {
   }
   onFavoritesChanged: firstApp = DockModel.barOffset(firstApp, 0, favorites.length)
   readonly property var visibleApps: favorites.slice(firstApp, firstApp + 4)
-  implicitWidth: controls.implicitWidth
-  implicitHeight: controls.implicitHeight
+  // Leave an unhandled edge for Omarchy's whole-widget mover; icon drags
+  // belong to the individual shortcut above that mover.
+  readonly property real movePadding: Style.space(4)
+  implicitWidth: controls.implicitWidth + (root.vertical ? 0 : movePadding * 2)
+  implicitHeight: controls.implicitHeight + (root.vertical ? movePadding * 2 : 0)
 
   property bool managing: false
   function manageApps() { managing = !managing }
@@ -108,30 +113,33 @@ BarWidget {
     }
     Repeater {
       model: root.showFavorites ? root.visibleApps : []
-      delegate: BarIconButton {
+      delegate: BarShortcut {
         id: appButton
+        BarDragFocus { anchorItem: appButton; active: appButton.dragging }
         required property string modelData
         readonly property var entry: DesktopEntries.byId(modelData)
+        appId: modelData
+        appName: entry ? entry.name : modelData
         bar: root.bar
-        slotSize: Style.bar.iconSlot
-        tooltipText: DockModel.barTooltip(entry ? entry.name : modelData)
-        iconComponent: Image {
-          width: Style.space(24)
-          height: width
-          fillMode: Image.PreserveAspectFit
-          source: {
-            var icon = appButton.entry ? String(appButton.entry.icon || "application-x-executable") : "application-x-executable"
-            return icon.startsWith("/") ? Qt.resolvedUrl("file://" + icon) : Quickshell.iconPath(icon)
-          }
+        groupItem: root
+        implicitWidth: root.vertical ? root.barSize : Style.bar.iconSlot
+        implicitHeight: root.vertical ? Style.bar.iconSlot : root.barSize
+        iconSize: Style.space(24)
+        iconSource: {
+          var icon = entry ? String(entry.icon || "application-x-executable") : "application-x-executable"
+          return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon)
         }
-        onPressed: function(mouseButton) {
-          if (mouseButton === Qt.RightButton) root.manageApps()
-          else if (mouseButton === Qt.LeftButton && appButton.entry)
-            Quickshell.execDetached(["uwsm-app", "--", "gtk-launch", modelData + ".desktop"])
+        onActivated: function(id) {
+          if (appButton.entry) Quickshell.execDetached(["uwsm-app", "--", "gtk-launch", id + ".desktop"])
         }
+        onRemoveRequested: function(id) {
+          Quickshell.execDetached(["omarchy-shell", "io.github.viniabdalla.omadocks", "removeFavorite", id])
+        }
+        onSecondaryClicked: root.manageApps()
         onWheelMoved: function(delta) { root.scroll(delta < 0 ? 1 : -1) }
       }
     }
+
     BarIconButton {
       visible: root.showFavorites
       bar: root.bar

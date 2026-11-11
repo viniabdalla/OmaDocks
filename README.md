@@ -67,6 +67,30 @@ There is **no plus button on the dock**. Manage pinned folders from the
 own themed UI components. Set each folder's display name, default view,
 name/newest sorting and hidden-file visibility there.
 
+## Toolbar and bar favorites
+
+**Toolbar** is a separate, movable Omarchy bar widget. Initially it sits beside
+the existing OmaDocks/Trópico group and contains three small icons: the system's
+default Terminal, Herdr (in the default Terminal), and the default browser.
+It has app-name tooltips and no background, outline, title, settings button or arrows. Its size
+follows its selection; an empty selection takes no bar space.
+
+Use the **Toolbar** tab in the existing OmaDocks settings to search, add or
+remove apps. The main dock's right-click menu also offers **Adicionar à Toolbar**
+or **Remover da Toolbar**. Toolbar selection is saved as `toolbarPinned`,
+independent of Trópico's `barPinned` favorites and the main dock's `pinned` list.
+The Terminal/browser shortcuts follow system defaults, including later changes.
+
+For **both Toolbar and Trópico favorites**, drag an app icon outside its own
+group and release to remove that shortcut. Release inside, return before
+releasing, or press Escape to keep it. This never uninstalls an app or changes
+another group's selection. The icon dims while removal is armed.
+
+Move the **whole Toolbar** using Omarchy's bar layout controls, or drag the
+group's blank edge padding. Dragging an app icon handles that shortcut only.
+The companion widget id is `io.github.viniabdalla.omadocks.toolbar`; the installer
+registers it separately and preserves its position on later runs.
+
 ## Install from this checkout
 
 Requires Omarchy's Quickshell shell, Hyprland, Python 3, `python-gobject`
@@ -84,7 +108,8 @@ The installer links this checkout into
 original Dockseid plugin, and preserves your other plugins and bar layout.
 Your existing customized dock-settings bar indicator continues to work via a
 compatibility IPC route. On other bar layouts it adds the OmaDocks settings
-widget.
+widget. The companion Toolbar plugin is linked from `toolbar/` in this same
+checkout and placed beside it.
 
 Before changing the shell configuration it saves a timestamped backup under
 `~/.local/state/omadocks/install-backups/`. The original Dockseid checkout and

@@ -23,6 +23,7 @@ PopupWindow {
   property real originY: 0
   property Item anchorItem: null
   property string dockPosition: "bottom"
+  property bool toolbarPinned: false
   property bool barPinned: false
   property bool pinned: false
   property bool running: false
@@ -32,6 +33,7 @@ PopupWindow {
   // is never a blind re-launch.
   property bool canNewWindow: false
 
+  signal toolbarPinToggled()
   signal barPinToggled()
   signal pinToggled()
   signal openRequested()
@@ -128,6 +130,11 @@ PopupWindow {
         objectName: "barFavoriteAction"
         label: popup.barPinned ? "Remove from bar favorites" : "Add to bar favorites"
         onActivated: { popup.barPinToggled(); popup.visible = false }
+      }
+      MenuRow {
+        objectName: "toolbarAction"
+        label: popup.toolbarPinned ? "Remover da Toolbar" : "Adicionar à Toolbar"
+        onActivated: { popup.toolbarPinToggled(); popup.visible = false }
       }
       MenuRow {
         visible: popup.running

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.viniabdalla.omadocks.toolbar",
+  "name": "Toolbar",
+  "version": "0.2.0",
+  "author": "viniabdalla; based on Dockseid by Silkvain",
+  "license": "MIT",
+  "description": "Toolbar",
+  "kinds": ["bar-widget"],
+  "entryPoints": {"barWidget": "BarWidget.qml"},
+  "barWidget": {
+    "displayName": "Toolbar",
+    "description": "Toolbar",
+    "category": "Compositor",
+    "allowMultiple": false
+  }
+}

@@ -35,3 +35,39 @@ test('legacy main pins never automatically become bar favorites',()=>{
  assert.deepEqual(Array.from(m.parseState(JSON.stringify({pinned:['browser']})).barPinned),[]);
  assert.deepEqual(Array.from(m.defaultState().barPinned),[]);
 });
+
+test('Toolbar seeds defaults once and preserves an intentionally empty selection',()=>{
+ const expected=['omadocks-default-terminal','omadocks-herdr','omadocks-default-browser'];
+ assert.deepEqual(Array.from(m.defaultState().toolbarPinned || []),expected);
+ assert.deepEqual(Array.from(m.parseState('{"pinned":["Oracle"]}').toolbarPinned || []),expected);
+ const s=m.parseState('{"pinned":["Oracle"],"barPinned":["crm"],"toolbarPinned":[]}');
+ const saved=m.parseState(m.serializeState(s));
+ assert.deepEqual(Array.from(saved.toolbarPinned),[]);
+ assert.deepEqual(Array.from(saved.pinned),['Oracle']);
+ assert.deepEqual(Array.from(saved.barPinned),['crm']);
+});
+test('Toolbar normalizes and persists its selection independently',()=>{
+ const s=m.parseState('{"toolbarPinned":["herdr","herdr",""," browser "],"barPinned":["crm"],"pinned":["Oracle"]}');
+ assert.deepEqual(Array.from(s.toolbarPinned),['herdr','browser']);
+ s.toolbarPinned=m.withoutPinned(s.toolbarPinned,'herdr');
+ s.toolbarPinned=m.withoutPinned(s.toolbarPinned,'herdr'); // repeated removals cannot add it back
+ const saved=m.parseState(m.serializeState(s));
+ assert.deepEqual(Array.from(saved.toolbarPinned),['browser']);
+ assert.deepEqual(Array.from(saved.barPinned),['crm']);
+ assert.deepEqual(Array.from(saved.pinned),['Oracle']);
+});
+test('current default apps map to Toolbar roles for contextual membership',()=>{
+ const defaults={terminal:'ghostty',browser:'chrome',herdr:'herdr'};
+ assert.equal(m.toolbarKey('ghostty',defaults),'omadocks-default-terminal');
+ assert.equal(m.toolbarKey('chrome',defaults),'omadocks-default-browser');
+ assert.equal(m.toolbarKey('herdr',defaults),'omadocks-herdr');
+ assert.equal(m.toolbarKey('editor',defaults),'editor');
+ assert.equal(m.toolbarKey('omadocks-default-terminal',defaults),'omadocks-default-terminal');
+ assert.equal(m.toolbarKey('editor',{}),'editor');
+});
+test('Toolbar launch commands follow defaults and run Herdr inside a terminal',()=>{
+ assert.deepEqual(Array.from(m.toolbarCommand('omadocks-default-terminal')),['omarchy-launch-terminal']);
+ assert.deepEqual(Array.from(m.toolbarCommand('omadocks-default-browser')),['omarchy-launch-browser']);
+ assert.deepEqual(Array.from(m.toolbarCommand('omadocks-herdr')),['omarchy-launch-terminal','--app-id=herdr','--title=Herdr','--','herdr']);
+ assert.deepEqual(Array.from(m.toolbarCommand('editor')),['uwsm-app','--','gtk-launch','editor.desktop']);
+});

@@ -240,6 +240,7 @@ Item {
     contextMenu.anchorItem = iconItem
     contextMenu.pinned = item.pinned
     contextMenu.barPinned = controller.isBarPinned(item.key)
+    contextMenu.toolbarPinned = controller.isToolbarPinned(item.key)
     contextMenu.running = item.running
     contextMenu.canOpen = item.pinned && !item.running
     contextMenu.canNewWindow = item.running && !!item.newWindowAction
@@ -911,6 +912,7 @@ Item {
     originY: surface.dockOriginY
     dockPosition: surface.position
     onPinToggled: if (surface.openPopupItem) controller.togglePin(surface.openPopupItem.key)
+    onToolbarPinToggled: if (surface.openPopupItem) controller.toggleToolbarPin(surface.openPopupItem.key)
     onBarPinToggled: if (surface.openPopupItem) controller.toggleBarPin(surface.openPopupItem.key)
     onOpenRequested: if (surface.openPopupItem) controller.launchItem(surface.openPopupItem)
     onNewWindowRequested: if (surface.openPopupItem) controller.newWindowForItem(surface.openPopupItem)
@@ -934,6 +936,7 @@ Item {
     onFolderUpdated:function(path,patch){ controller.updateFolder(path,patch) }
     onFolderRemoved:function(path){ controller.removeFolder(path) }
     onAppPicked: function(id) { controller.togglePin(id) }
+    onToolbarAppPicked: function(id) { controller.toggleToolbarPin(id) }
     onBarAppPicked: function(id) { controller.toggleBarPin(id) }
     onShapePicked: function(v) { controller.setShape(v); settingsPopup.shape = v }
     onOpacityPicked: function(v) { controller.setOpacity(v); settingsPopup.opacityValue = v }

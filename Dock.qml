@@ -19,6 +19,8 @@ Item {
 
   property var pinnedIds: []
   property var barPinnedIds: []
+  property var toolbarPinnedIds: DockModel.defaultToolbar()
+  ToolbarApps { id: toolbarApps }
   // The user's manual drag order — a flat list of dock-item keys covering
   // pinned and running-unpinned items alike. Empty until they reorder
   // anything, at which point it fully describes the visible arrangement.
@@ -30,7 +32,7 @@ Item {
   // -------------------------------------------------------------- state io
   function persist() {
     if (!root.stateLoaded) return
-    root.lastWritten = DockModel.serializeState({ pinned: root.pinnedIds, barPinned: root.barPinnedIds, order: root.iconOrder, folders: root.folders, settings: root.settings })
+    root.lastWritten = DockModel.serializeState({ pinned: root.pinnedIds, barPinned: root.barPinnedIds, toolbarPinned: root.toolbarPinnedIds, order: root.iconOrder, folders: root.folders, settings: root.settings })
     stateFile.setText(root.lastWritten)
   }
 
@@ -42,11 +44,17 @@ Item {
     var state = DockModel.parseState(text)
     root.pinnedIds = state.pinned
     root.barPinnedIds = state.barPinned
+    root.toolbarPinnedIds = state.toolbarPinned
     root.iconOrder = state.order
     root.folders = state.folders
     root.settings = state.settings
     root.stateLoaded = true
     root.rebuildItems()
+    // Materialize the new list on upgrade. Subsequent loads, including an
+    // intentionally empty list, never seed it again.
+    var original = null
+    try { original = JSON.parse(text) } catch (e) {}
+    if (!original || original.toolbarPinned === undefined) root.persist()
   }
 
   function registerSurface(surface) {
@@ -106,6 +114,10 @@ Item {
       root.toggleBarPin(id)
       return "ok"
     }
+    function removeFavorite(id: string): string { root.removeBarPin(id); return "ok" }
+    function toggleToolbar(id: string): string { return root.toggleToolbarPin(id) ? "ok" : "unknown" }
+    function removeToolbar(id: string): string { root.removeToolbarPin(id); return "ok" }
+    function toolbarStatus(): string { return JSON.stringify({apps: root.toolbarPinnedIds, defaults: toolbarApps.defaults}) }
     function barFavorites(enabled: bool): string {
       root.setBarFavorites(enabled)
       return "ok"
@@ -551,6 +563,29 @@ Item {
     root.rebuildItems()
   }
 
+  function removeBarPin(id) {
+    root.barPinnedIds = DockModel.withoutPinned(root.barPinnedIds, id)
+    root.persist()
+  }
+
+  function toolbarKey(id) { return DockModel.toolbarKey(id, toolbarApps.defaults) }
+  function isToolbarPinned(id) {
+    var key = root.toolbarKey(id)
+    return root.toolbarPinnedIds.some(function(saved) { return root.toolbarKey(saved) === key })
+  }
+  function removeToolbarPin(id) {
+    var key = root.toolbarKey(id)
+    root.toolbarPinnedIds = root.toolbarPinnedIds.filter(function(saved) { return root.toolbarKey(saved) !== key })
+    root.persist()
+  }
+  function toggleToolbarPin(id) {
+    var key = root.toolbarKey(id)
+    if (!toolbarApps.entryFor(key)) return false
+    if (root.isToolbarPinned(key)) root.removeToolbarPin(key)
+    else { root.toolbarPinnedIds = root.toolbarPinnedIds.concat([key]); root.persist() }
+    return true
+  }
+
   function isBarPinned(id) { return root.barPinnedIds.indexOf(id) >= 0 }
   function toggleBarPin(id) {
     if (!DesktopEntries.byId(id)) return
@@ -762,7 +797,10 @@ Item {
     for (var i = 0; i < apps.length; i++) {
       var e = apps[i]
       if (e.noDisplay) continue
-      out.push({ id: e.id, name: e.name, pinned: root.isPinned(e.id), barPinned: root.isBarPinned(e.id), iconSource: root.iconForKey(e.id, e) })
+      out.push({ id: e.id, name: e.name, pinned: root.isPinned(e.id), barPinned: root.isBarPinned(e.id), toolbarPinned: root.isToolbarPinned(e.id), iconSource: root.iconForKey(e.id, e) })
+    }
+    for (var role of toolbarApps.entries) {
+      out.push(Object.assign({}, role, {toolbarPinned: root.isToolbarPinned(role.id)}))
     }
     out.sort(function(a, b) { return a.name.localeCompare(b.name) })
     return out

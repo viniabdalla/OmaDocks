@@ -7,6 +7,8 @@ ShellRoot {
   property int dockChanges: 0
   property int barChanges: 0
   property int contextChanges: 0
+  property int toolbarChanges: 0
+  property int toolbarContextChanges: 0
   function check(ok, message) { if (!ok) errors.push(message) }
   function find(item, name) {
     if (!item) return null
@@ -21,11 +23,13 @@ ShellRoot {
     allEntries: [{id:"Oracle", name:"Oracle", pinned:false, barPinned:true, iconSource:""}]
     onAppPicked: root.dockChanges++
     onBarAppPicked: root.barChanges++
+    onToolbarAppPicked: root.toolbarChanges++
   }
   Dock.IconContextMenu {
     id: menu
     running: true
     onBarPinToggled: root.contextChanges++
+    onToolbarPinToggled: root.toolbarContextChanges++
   }
   Timer {
     interval: 300; running: true
@@ -47,6 +51,17 @@ ShellRoot {
         root.check(root.contextChanges===1,"context action did not emit bar pin toggle")
         menu.barPinned=true
         root.check(action.label==="Remove from bar favorites","missing remove label")
+      }
+      settings.filterText=""; settings.activeTab=4; settings.selectedIndex=0; settings.activateSelected()
+      root.check(root.toolbarChanges===1 && root.barChanges===1 && root.dockChanges===1,"Toolbar selection crossed groups")
+      var toolbarAction=root.find(menu.contentItem,"toolbarAction")
+      root.check(!!toolbarAction,"Toolbar context action missing")
+      if(toolbarAction) {
+        root.check(toolbarAction.label==="Adicionar à Toolbar","Toolbar add label")
+        toolbarAction.activated()
+        root.check(root.toolbarContextChanges===1,"Toolbar toggle not emitted")
+        menu.toolbarPinned=true
+        root.check(toolbarAction.label==="Remover da Toolbar","Toolbar remove label")
       }
       console.log("QA_BAR_RESULT " + JSON.stringify(root.errors))
       Qt.quit()
